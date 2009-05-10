@@ -1,0 +1,6 @@
+syno-packager:
+
+Scripts, changes, tools to compile and package different programs for Synology
+NAS devices.
+
+All external packages are bundled under the ext/ folder.

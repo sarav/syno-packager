@@ -23,13 +23,18 @@ TARGET=arm-marvell-linux-gnu
 # packages need to have specific out/<pkg>/syno.config rule defined.
 NONSTD_PKGS=openssl
 
-# List of packages that need to be installed in the target. For example, curl
-# and openssl don't need to be installed for transmission since transmission is
-# statically compiled. So when compiling to install transmission, one would
-# omit curl and openssl from this list.
-INSTALL_PKGS=transmission
+# The main package you are trying to build. Ex: transmission
+INSTALL_PKG=transmission
 
-# Generate package names from ext/libs/* and ext/exec/*
+# List of packages that are need to be installed in the device for the main
+# package to work. Not all dependencies needed for compilation need to be
+# installed in the device. For example, tranmission needs curl and openssl to
+# compile, but it doesn't need their libraries to be present in the target
+# since transmission is statically compiled.
+INSTALL_DEPS=
+INSTALL_PREFIX=/usr/local
+
+# Generate intermediate variables for use in rules.
 PKG_TARS=$(wildcard ext/libs/* ext/exec/*)
 PKGS=$(notdir $(PKG_TARS))
 PKGS:=$(PKGS:.tar.gz=)
@@ -39,15 +44,29 @@ PKGS_NOVER=$(foreach pkg, $(PKGS), $(shell echo $(pkg) | sed -r -e 's/(.*)-[0-9]
 PKG_DESTS=$(PKGS_NOVER:%=out/%.unpack)
 STD_PKGS=$(filter-out $(NONSTD_PKGS), $(PKGS_NOVER))
 TEMPROOT=$(PWD)/out/temproot
-ROOT=$(PWD)/out/root/usr/local
-INSTALL_TGTS=$(INSTALL_PKGS:%=out/%/syno.config)
+ROOT=$(PWD)/out/root$(INSTALL_PREFIX)
+INSTALL_TGTS=$(INSTALL_PKG:%=out/%/syno.config)
+ifneq ($(strip $(INSTALL_DEPS)),)
+INSTALL_TGTS+=$(INSTALL_DEPS:%=out/%/syno.config)
+endif
 
 # Environment variables common to all package compilation
 PATH:=$(PWD)/cc/bin:$(PATH)
 CFLAGS=-I$(PWD)/cc/include -I$(TEMPROOT)/include -I$(ROOT)/include
 LDFLAGS=-L$(PWD)/cc/lib -L$(TEMPROOT)/lib -L$(ROOT)/lib
 
-all: transmission
+all: $(INSTALL_PKG)
+	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
+	@echo
+
+help:
+	@echo make - Compile INSTALL_PKG and place it under out/root/
+	@echo make \<packagename\> - Compile package and place it under out/temproot
+	@echo "			or out/root if it's an INSTALL_PKG or INSTALL_DEPS"
+	@echo make spk - Create an spk for INSTALL_PKG with the files under out/root.
+	@echo make clean - Delete all generated files.
+	@echo make realclean - Delete all generated files and uncompressed toolchain.
+	@echo
 
 # Dependency declarations.
 out/transmission/syno.config: out/curl/syno.install out/openssl/syno.install
@@ -102,3 +121,29 @@ clean:
 
 realclean: clean
 	rm -rf precomp cc
+
+
+###########################
+#     Packaging rules     #
+###########################
+
+SPK_NAME=$(INSTALL_PKG)
+
+SPK_VERSION=$(notdir $(wildcard ext/*/$(INSTALL_PKG)*))
+SPK_VERSION:=$(SPK_VERSION:.tar.gz=)
+SPK_VERSION:=$(SPK_VERSION:.tar.bz2=)
+SPK_VERSION:=$(SPK_VERSION:$(INSTALL_PKG)%=%)
+# The "-" needs to be removed separately.
+SPK_VERSION:=$(SPK_VERSION:-%=%)
+
+SPK_DESC=
+SPK_MAINT=
+SPK_ARCH=
+SPK_RELOADUI=
+
+spk:
+	rm -rf out/spk
+	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_DESC=$(SPK_DESC) \
+	SPK_MAINT=$(SPK_MAINT) SPK_ARCH=$(SPK_ARCH) \
+	SPK_RELOADUI=$(SPK_RELOADUI) \
+	./scripts/buildspk.sh

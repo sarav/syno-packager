@@ -1,0 +1,17 @@
+#!/bin/sh
+
+case $1 in
+start)
+	echo Starting...
+	exit 0;;
+stop)
+	echo Stopping...
+	exit 0;;
+status)
+	# 0 - running
+	# 1 - stopped
+	echo Status:
+	exit 0;;
+esac
+
+exit 1

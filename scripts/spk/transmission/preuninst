@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./start-stop-status stop
+
+exit 0

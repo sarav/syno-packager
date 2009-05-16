@@ -1,0 +1,8 @@
+#!/bin/sh
+
+mkdir -p /usr/local/share/transmission
+ln -s $SYNOPKG_PKGDEST/usr/local/bin/transmission-daemon /usr/local/bin/transmission-daemon
+ln -s $SYNOPKG_PKGDEST/usr/local/share/transmission/web /usr/local/share/transmission/web
+echo "Enter allowed user list in /usr/local/etc/transmission.users" > $SYNOPKG_TEMP_LOGFILE
+
+exit 0

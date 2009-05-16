@@ -56,9 +56,10 @@ echo arch=\"$SPK_ARCH\" >> $INFO_FILE
 echo reloadui=\"$SPK_RELOADUI\" >> $INFO_FILE
 
 mkdir -p $SPK_DIR/scripts
-cp scripts/spk/* $SPK_DIR/scripts
+cp scripts/spk/$SPK_NAME/* $SPK_DIR/scripts
 
 cd out/root && tar czf ../../$SPK_DIR/package.tgz *
 cd ../../$SPK_DIR
+rm -f ../$SPK_NAME-$SPK_VERSION.spk
 tar cf ../$SPK_NAME-$SPK_VERSION.spk *
 

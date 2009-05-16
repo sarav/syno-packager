@@ -136,10 +136,10 @@ SPK_VERSION:=$(SPK_VERSION:$(INSTALL_PKG)%=%)
 # The "-" needs to be removed separately.
 SPK_VERSION:=$(SPK_VERSION:-%=%)
 
-SPK_DESC=
-SPK_MAINT=
-SPK_ARCH=
-SPK_RELOADUI=
+SPK_DESC="Transmission 1.60"
+SPK_MAINT="Sarav"
+SPK_ARCH="noarch"
+SPK_RELOADUI="yes"
 
 spk:
 	rm -rf out/spk

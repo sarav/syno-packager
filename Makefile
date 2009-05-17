@@ -136,8 +136,8 @@ SPK_VERSION:=$(SPK_VERSION:$(INSTALL_PKG)%=%)
 # The "-" needs to be removed separately.
 SPK_VERSION:=$(SPK_VERSION:-%=%)
 
-SPK_DESC="Transmission 1.60"
-SPK_MAINT="Sarav"
+SPK_DESC="Tranmission bittorrent client that can be controlled through several remote and Web UIs."
+SPK_MAINT="sarav.devel@gmail.com"
 SPK_ARCH="noarch"
 SPK_RELOADUI="yes"
 

@@ -1,3 +1,22 @@
+#!/bin/sh
+# Copyright 2009 Saravana Kannan
+# <sarav dot devel [ignore this] at gmail period com>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
 if [ "$1" != "" ]; then
 	SPK_NAME=$1
 fi
@@ -56,7 +75,7 @@ echo arch=\"$SPK_ARCH\" >> $INFO_FILE
 echo reloadui=\"$SPK_RELOADUI\" >> $INFO_FILE
 
 mkdir -p $SPK_DIR/scripts
-cp scripts/spk/$SPK_NAME/* $SPK_DIR/scripts
+cp src/$SPK_NAME/spk/* $SPK_DIR/scripts
 
 cd out/root && tar czf ../../$SPK_DIR/package.tgz *
 cd ../../$SPK_DIR

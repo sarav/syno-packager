@@ -1,5 +1,0 @@
-#!/bin/sh
-
-echo $SYNOPKG_PKGDEST
-
-exit 0

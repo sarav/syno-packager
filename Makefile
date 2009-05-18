@@ -146,4 +146,4 @@ spk:
 	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_DESC=$(SPK_DESC) \
 	SPK_MAINT=$(SPK_MAINT) SPK_ARCH=$(SPK_ARCH) \
 	SPK_RELOADUI=$(SPK_RELOADUI) \
-	./scripts/buildspk.sh
+	./src/buildspk.sh

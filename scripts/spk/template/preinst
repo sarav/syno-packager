@@ -1,5 +1,0 @@
-#!/bin/sh
-
-echo "Message" > $SYNOPKG_TEMP_LOGFILE
-
-exit 0

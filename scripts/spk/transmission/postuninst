@@ -1,8 +1,0 @@
-#!/bin/sh
-
-rm -f /usr/local/etc/transmission.users
-rm -f /usr/local/bin/transmission-daemon
-rm -f /usr/local/share/transmission/web
-rmdir /usr/local/share/transmission
-
-exit 0

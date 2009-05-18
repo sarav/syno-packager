@@ -44,16 +44,18 @@ PKGS_NOVER=$(foreach pkg, $(PKGS), $(shell echo $(pkg) | sed -r -e 's/(.*)-[0-9]
 PKG_DESTS=$(PKGS_NOVER:%=out/%.unpack)
 STD_PKGS=$(filter-out $(NONSTD_PKGS), $(PKGS_NOVER))
 TEMPROOT=$(PWD)/out/temproot
-ROOT=$(PWD)/out/root$(INSTALL_PREFIX)
-INSTALL_TGTS=$(INSTALL_PKG:%=out/%/syno.config)
+ROOT=$(PWD)/out/root
+
+INSTALL_TGTS=$(INSTALL_PKG)
 ifneq ($(strip $(INSTALL_DEPS)),)
-INSTALL_TGTS+=$(INSTALL_DEPS:%=out/%/syno.config)
+INSTALL_TGTS+=$(INSTALL_DEPS)
 endif
+SUPPORT_TGTS=$(filter-out $(INSTALL_TGTS), $(PKGS_NOVER))
 
 # Environment variables common to all package compilation
 PATH:=$(PWD)/cc/bin:$(PATH)
-CFLAGS=-I$(PWD)/cc/include -I$(TEMPROOT)/include -I$(ROOT)/include
-LDFLAGS=-L$(PWD)/cc/lib -L$(TEMPROOT)/lib -L$(ROOT)/lib
+CFLAGS=-I$(PWD)/cc/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include
+LDFLAGS=-L$(PWD)/cc/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
 
 all: $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
@@ -92,14 +94,20 @@ $(STD_PKGS:%=out/%/syno.config): %/syno.config: %.unpack cc
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--disable-gtk --disable-nls \
-			--prefix=$(if $(filter $@, $(INSTALL_TGTS)),$(ROOT),$(TEMPROOT)) \
+			--prefix=$(INSTALL_PREFIX) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
-$(PKGS_NOVER:%=out/%/syno.install): out/%/syno.install: out/%/syno.config
+$(INSTALL_TGTS:%=out/%/syno.install): out/%/syno.install: out/%/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@)
-	make -C $(dir $@) install
+	make -C $(dir $@) DESTDIR=$(ROOT) INSTALL_PREFIX=$(ROOT) install
+	touch $@
+
+$(SUPPORT_TGTS:%=out/%/syno.install): out/%/syno.install: out/%/syno.config
+	@echo $@ ----\> $^
+	make -C $(dir $@)
+	make -C $(dir $@) DESTDIR=$(TEMPROOT) INSTALL_PREFIX=$(TEMPROOT) install
 	touch $@
 
 $(PKGS_NOVER): %: out/%/syno.install
@@ -111,7 +119,7 @@ $(PKGS_NOVER:%=%.clean):
 out/openssl/syno.config: out/openssl.unpack cc
 	@echo $@ ----\> $^
 	cd out/openssl && \
-	./Configure.syno linux-elf-armle --prefix=$(if $(filter $@, $(INSTALL_TGTS)),$(ROOT),$(TEMPROOT)) --cc=$(TARGET)-gcc
+	./Configure.syno linux-elf-armle --prefix=$(INSTALL_PREFIX) --cc=$(TARGET)-gcc
 	touch out/openssl/syno.config
 
 unpack: cc $(PKG_DESTS)

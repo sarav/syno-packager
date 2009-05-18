@@ -18,9 +18,13 @@
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
 
+syno3rdpty=/usr/syno/synoman/webman/3rdparty
+
 rm -f /usr/local/etc/transmission.users
 rm -f /usr/local/bin/transmission-daemon
+rm -f /usr/local/bin/transmission-adduser
 rm -f /usr/local/share/transmission/web
 rmdir /usr/local/share/transmission
+rm -rf $syno3rdpty/transmission
 
 exit 0

@@ -21,6 +21,7 @@
 start_daemon() {
 	ulist=`cat /usr/local/etc/transmission.users`
 	if [ "$ulist" = "" ]; then
+		echo "Run transmission-adduser to add Transmission usage priviliges to at least one user." > $SYNOPKG_TEMP_LOGFILE
 		return 1
 	fi
 	for u in $ulist

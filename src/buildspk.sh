@@ -76,6 +76,10 @@ echo reloadui=\"$SPK_RELOADUI\" >> $INFO_FILE
 
 mkdir -p $SPK_DIR/scripts
 cp src/$SPK_NAME/spk/* $SPK_DIR/scripts
+if [ -d src/$SPK_NAME/extra ]; then
+	rm -rf out/root/extra
+	cp -r src/$SPK_NAME/extra out/root/extra
+fi
 
 cd out/root && tar czf ../../$SPK_DIR/package.tgz *
 cd ../../$SPK_DIR

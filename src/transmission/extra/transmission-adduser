@@ -17,18 +17,31 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-
-syno3rdpty=/usr/syno/synoman/webman/3rdparty
-
-mkdir -p /usr/local/share/transmission
-ln -s $SYNOPKG_PKGDEST/usr/local/bin/transmission-daemon /usr/local/bin/transmission-daemon
-ln -s $SYNOPKG_PKGDEST/usr/local/share/transmission/web /usr/local/share/transmission/web
-ln -s $SYNOPKG_PKGDEST/extra/transmission-adduser /usr/local/bin/transmission-adduser
-if [ -d $syno3rdpty ]; then
-	mkdir -p $syno3rdpty/transmission
-	ln -s $SYNOPKG_PKGDEST/extra/application.cfg $syno3rdpty/transmission/application.cfg
+if [ "$1" = "" -o "$2" = "" ]; then
+	echo "`basename $0` <username> <webui port> [<webui passwd>]"
+	echo "<webui passwd> defaults to <username>!!!"
+	exit 1
 fi
-echo "Run transmission-adduser as root to add Transmission usage privileges to a user" > $SYNOPKG_TEMP_LOGFILE
-echo "User home must be present to use Transmission." >> $SYNOPKG_TEMP_LOGFILE
 
-exit 0
+pkgdir=`ls -cl $0 | sed -r "s/.*-> (.*)/\1/g"`
+pkgdir=`dirname $pkgdir`
+
+username=$1
+port=$2
+userpwd=$3
+
+if [ "$userpwd" = "" ]; then
+	userpwd=$username!!!
+fi
+
+configdir=`su $username -s /bin/sh -c "cd && pwd"`/.config/transmission-daemon
+su $username -s /bin/sh -c "mkdir -p $configdir"
+
+if [ ! -f $configdir/settings.json ]; then
+	sed -r "s/%RPCUSERNAME%/$username/g; s/%RPCPORT%/$port/g; s/%RPCPASSWD%/$userpwd/g" /$pkgdir/settings.json > $configdir/settings.json
+	chown $username:users $configdir/settings.json
+else
+	echo "Using preexisting user settings."
+fi
+
+echo "$username" >> /usr/local/etc/transmission.users

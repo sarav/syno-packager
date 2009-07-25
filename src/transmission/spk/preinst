@@ -18,4 +18,24 @@
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Find the CPU architecture
+arch=`grep unique /etc.defaults/synoinfo.conf | sed -r "s/.*_([^_]*)_.*/\1/g"`
+
+# Check for the architecture.
+if [ "$arch" != "88f5281" ]; then
+	echo "Your device is based on a $arch CPU." > $SYNOPKG_TEMP_LOGFILE
+	echo "Sorry, this program was not compiled for your device." >> $SYNOPKG_TEMP_LOGFILE
+	exit 1
+fi
+
+# Check if /usr/local/bin is present in the PATH.
+echo $PATH | grep /usr/local/bin
+if [ $? -ne 0 ]; then
+	echo "/usr/local/bin is not present in the PATH!" > $SYNOPKG_TEMP_LOGFILE
+	echo "You will have to upgrade to a newer FW and hope that works" >> $SYNOPKG_TEMP_LOGFILE
+	echo "or somehow add /usr/local/bin to *every* user's PATH." >> $SYNOPKG_TEMP_LOGFILE
+	echo "Good luck!" >> $SYNOPKG_TEMP_LOGFILE
+	exit 1
+fi
+
 exit 0

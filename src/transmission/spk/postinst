@@ -20,6 +20,8 @@
 
 syno3rdpty=/usr/syno/synoman/webman/3rdparty
 
+mkdir -p /usr/local/bin
+mkdir -p /usr/local/etc
 mkdir -p /usr/local/share/transmission
 ln -s $SYNOPKG_PKGDEST/usr/local/bin/transmission-daemon /usr/local/bin/transmission-daemon
 ln -s $SYNOPKG_PKGDEST/usr/local/share/transmission/web /usr/local/share/transmission/web
@@ -29,6 +31,6 @@ if [ -d $syno3rdpty ]; then
 	ln -s $SYNOPKG_PKGDEST/extra/application.cfg $syno3rdpty/transmission/application.cfg
 fi
 echo "Run transmission-adduser as root to add Transmission usage privileges to a user" > $SYNOPKG_TEMP_LOGFILE
-echo "User home must be present to use Transmission." >> $SYNOPKG_TEMP_LOGFILE
+echo "User Home service must be enabled to use Transmission." >> $SYNOPKG_TEMP_LOGFILE
 
 exit 0

@@ -147,7 +147,7 @@ SPK_VERSION:=$(SPK_VERSION:-%=%)
 SPK_DESC="Tranmission bittorrent client that can be controlled through several remote and Web UIs."
 SPK_MAINT="sarav.devel@gmail.com"
 SPK_ARCH="noarch"
-SPK_RELOADUI="yes"
+SPK_RELOADUI="no"
 
 spk:
 	rm -rf out/spk

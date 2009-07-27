@@ -62,7 +62,8 @@ if [ ! -d out ]; then
 	exit 1
 fi
 
-SPK_DIR=out/spk
+OUT_DIR=out/$SPK_ARCH
+SPK_DIR=$OUT_DIR/spk
 INFO_FILE=$SPK_DIR/INFO
 
 mkdir -p $SPK_DIR
@@ -76,13 +77,17 @@ echo reloadui=\"$SPK_RELOADUI\" >> $INFO_FILE
 
 mkdir -p $SPK_DIR/scripts
 cp src/$SPK_NAME/spk/* $SPK_DIR/scripts
+
+# Search and replace the place holders in the scripts.
+sed -i -e "s/%SPK_ARCH%/$SPK_ARCH/g" $SPK_DIR/scripts/*
+
 if [ -d src/$SPK_NAME/extra ]; then
-	rm -rf out/root/extra
-	cp -r src/$SPK_NAME/extra out/root/extra
+	rm -rf $OUT_DIR/root/extra
+	cp -r src/$SPK_NAME/extra $OUT_DIR/root/extra
 fi
 
-cd out/root && tar czf ../../$SPK_DIR/package.tgz *
-cd ../../$SPK_DIR
-rm -f ../$SPK_NAME-$SPK_VERSION.spk
-tar cf ../$SPK_NAME-$SPK_VERSION.spk *
+cd $OUT_DIR/root && tar czf ../../../$SPK_DIR/package.tgz *
+cd ../../../$SPK_DIR
+rm -f ../../$SPK_NAME-$SPK_VERSION-$SPK_ARCH.spk
+tar cf ../../$SPK_NAME-$SPK_VERSION-$SPK_ARCH.spk *
 

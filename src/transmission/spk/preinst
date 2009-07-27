@@ -22,7 +22,7 @@
 arch=`grep unique /etc.defaults/synoinfo.conf | sed -r "s/.*_([^_]*)_.*/\1/g"`
 
 # Check for the architecture.
-if [ "$arch" != "88f5281" ]; then
+if [ "$arch" != "%SPK_ARCH%" ]; then
 	echo "Your device is based on a $arch CPU." > $SYNOPKG_TEMP_LOGFILE
 	echo "Sorry, this program was not compiled for your device." >> $SYNOPKG_TEMP_LOGFILE
 	exit 1

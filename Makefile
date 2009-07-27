@@ -16,11 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-# At least one of the toolchains compilers should have this exact prefix.
-TARGET=arm-marvell-linux-gnu
+# The architecture for which this is being compiled.
+# To compile for another target without changing the Makefile, run:
+# make ARCH=<arch name>
+ARCH=88f5281
+
+# Target name to be used for the configure script.
+TARGET=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 2)
+# Path to the compiler
+CC_PATH=precomp/$(ARCH)/$(TARGET)
+# Output dir
+OUT_DIR=out/$(ARCH)
 
 # Packages that don't follow the GNU ./configure script standard. These
-# packages need to have specific out/<pkg>/syno.config rule defined.
+# packages need to have specific out/<arch>/<pkg>/syno.config rule defined.
 NONSTD_PKGS=openssl
 
 # The main package you are trying to build. Ex: transmission
@@ -41,10 +50,10 @@ PKGS:=$(PKGS:.tar.gz=)
 PKGS:=$(PKGS:.tar.bz2=)
 PKGS_NOVER=$(foreach pkg, $(PKGS), $(shell echo $(pkg) | sed -r -e 's/(.*)-[0-9][0-9.a-zRC]+$$/\1/g'))
 
-PKG_DESTS=$(PKGS_NOVER:%=out/%.unpack)
+PKG_DESTS=$(PKGS_NOVER:%=$(OUT_DIR)/%.unpack)
 STD_PKGS=$(filter-out $(NONSTD_PKGS), $(PKGS_NOVER))
-TEMPROOT=$(PWD)/out/temproot
-ROOT=$(PWD)/out/root
+TEMPROOT=$(PWD)/$(OUT_DIR)/temproot
+ROOT=$(PWD)/$(OUT_DIR)/root
 
 INSTALL_TGTS=$(INSTALL_PKG)
 ifneq ($(strip $(INSTALL_DEPS)),)
@@ -53,42 +62,49 @@ endif
 SUPPORT_TGTS=$(filter-out $(INSTALL_TGTS), $(PKGS_NOVER))
 
 # Environment variables common to all package compilation
-PATH:=$(PWD)/cc/bin:$(PATH)
-CFLAGS=-I$(PWD)/cc/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include
-LDFLAGS=-L$(PWD)/cc/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
+PATH:=$(PWD)/$(CC_PATH)/bin:$(PATH)
+CFLAGS=-I$(PWD)/$(CC_PATH)/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include
+LDFLAGS=-L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
 
-all: $(INSTALL_PKG)
+all: check-arch $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
 	@echo
 
+check-arch:
+	@echo -n "Checking whether architecture $(ARCH) is supported... "
+	@grep ^$(ARCH): arch-target.map > /dev/null
+	@echo Yes.
+	@echo Target: $(TARGET)
+
 help:
-	@echo make - Compile INSTALL_PKG and place it under out/root/
-	@echo make \<packagename\> - Compile package and place it under out/temproot
-	@echo "			or out/root if it's an INSTALL_PKG or INSTALL_DEPS"
-	@echo make spk - Create an spk for INSTALL_PKG with the files under out/root.
-	@echo make clean - Delete all generated files.
+	@echo
+	@echo Help text for architecture $(ARCH):
+	@echo make - Compile INSTALL_PKG and place it under out/$(ARCH)/root/
+	@echo make ARCH=\<arch\> - Compile INSTALL_PKG for \<arch\> and place it under out/\<arch\>/root/
+	@echo make \<packagename\> - Compile package and place it under out/$(ARCH)/temproot
+	@echo "			or out/$(ARCH)/root if it's an INSTALL_PKG or INSTALL_DEPS"
+	@echo make spk - Create an spk for INSTALL_PKG with the files under out/$(ARCH)/root.
+	@echo make clean - Delete all generated files for $(ARCH).
 	@echo make realclean - Delete all generated files and uncompressed toolchain.
 	@echo
 
 # Dependency declarations.
-out/transmission/syno.config: out/curl/syno.install out/openssl/syno.install
+$(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/curl/syno.install $(OUT_DIR)/openssl/syno.install
 
 # Unpack the toolchain
-precomp/$(TARGET):
-	mkdir -p precomp
-	tar xf ext/precompiled/$(TARGET).tar.* -C precomp
+precomp/$(ARCH):
+	grep ^$(ARCH) arch-target.map
+	mkdir -p precomp/$(ARCH)
+	tar xf ext/precompiled/$(ARCH).tar.* -C precomp/$(ARCH)
 
-cc: precomp/$(TARGET)
-	ln -s precomp/$(TARGET) cc
-
-$(PKGS_NOVER:%=out/%.unpack):
+$(PKGS_NOVER:%=$(OUT_DIR)/%.unpack):
 	@echo $@ ----\> $^
-	mkdir -p out
-	tar mxf ext/*/$(patsubst %.unpack,%,$(notdir $@))* -C out
-	cd out/ && ln -s $(patsubst %.unpack,%,$(notdir $@))* $(patsubst %.unpack,%,$(notdir $@))
+	mkdir -p $(OUT_DIR)
+	tar mxf ext/*/$(patsubst %.unpack,%,$(notdir $@))* -C $(OUT_DIR)
+	cd $(OUT_DIR)/ && ln -s $(patsubst %.unpack,%,$(notdir $@))* $(patsubst %.unpack,%,$(notdir $@))
 	touch $@
 
-$(STD_PKGS:%=out/%/syno.config): %/syno.config: %.unpack cc
+$(STD_PKGS:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	./configure --host=$(TARGET) --target=$(TARGET) \
@@ -98,37 +114,40 @@ $(STD_PKGS:%=out/%/syno.config): %/syno.config: %.unpack cc
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
-$(INSTALL_TGTS:%=out/%/syno.install): out/%/syno.install: out/%/syno.config
+$(INSTALL_TGTS:%=$(OUT_DIR)/%/syno.install): $(OUT_DIR)/%/syno.install: $(OUT_DIR)/%/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@)
 	make -C $(dir $@) DESTDIR=$(ROOT) INSTALL_PREFIX=$(ROOT) install
 	touch $@
 
-$(SUPPORT_TGTS:%=out/%/syno.install): out/%/syno.install: out/%/syno.config
+$(SUPPORT_TGTS:%=$(OUT_DIR)/%/syno.install): $(OUT_DIR)/%/syno.install: $(OUT_DIR)/%/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@)
 	make -C $(dir $@) DESTDIR=$(TEMPROOT) INSTALL_PREFIX=$(TEMPROOT) install
 	touch $@
 
-$(PKGS_NOVER): %: out/%/syno.install
+$(PKGS_NOVER): %: $(OUT_DIR)/%/syno.install
 	@echo $@ ----\> $^
 
 $(PKGS_NOVER:%=%.clean):
-	rm -rf out/$(patsubst %.clean,%, $@)*
+	rm -rf $(OUT_DIR)/$(patsubst %.clean,%, $@)*
 
-out/openssl/syno.config: out/openssl.unpack cc
+$(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/openssl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
-	cd out/openssl && \
+	cd $(OUT_DIR)/openssl && \
 	./Configure.syno linux-elf-armle --prefix=$(INSTALL_PREFIX) --cc=$(TARGET)-gcc
-	touch out/openssl/syno.config
+	touch $(OUT_DIR)/openssl/syno.config
 
-unpack: cc $(PKG_DESTS)
+unpack: precomp/$(ARCH) $(PKG_DESTS)
 
 clean:
+	rm -rf $(OUT_DIR)
+
+cleanall:
 	rm -rf out
 
-realclean: clean
-	rm -rf precomp cc
+realclean: cleanall
+	rm -rf precomp
 
 
 ###########################
@@ -146,11 +165,11 @@ SPK_VERSION:=$(SPK_VERSION:-%=%)
 
 SPK_DESC="Tranmission bittorrent client that can be controlled through several remote and Web UIs."
 SPK_MAINT="sarav.devel@gmail.com"
-SPK_ARCH="noarch"
+SPK_ARCH="$(ARCH)"
 SPK_RELOADUI="no"
 
 spk:
-	rm -rf out/spk
+	rm -rf $(OUT_DIR)/spk
 	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_DESC=$(SPK_DESC) \
 	SPK_MAINT=$(SPK_MAINT) SPK_ARCH=$(SPK_ARCH) \
 	SPK_RELOADUI=$(SPK_RELOADUI) \

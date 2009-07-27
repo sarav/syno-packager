@@ -76,6 +76,10 @@ check-arch:
 	@echo Yes.
 	@echo Target: $(TARGET)
 
+archs:
+	@echo List of supported architectures:
+	@grep ^[^#] arch-target.map | cut -d: -f1
+
 help:
 	@echo
 	@echo Help text for architecture $(ARCH):

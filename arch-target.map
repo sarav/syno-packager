@@ -2,3 +2,4 @@
 ppc824x:powerpc-linux
 ppc853x:powerpc-linux-gnuspe
 ppc854x:powerpc-linux-gnuspe
+88f6281:arm-none-linux-gnueabi

@@ -72,7 +72,7 @@ echo package=\"$SPK_NAME\" > $INFO_FILE
 echo version=\"$SPK_VERSION\" >> $INFO_FILE
 echo description=\"$SPK_DESC\" >> $INFO_FILE
 echo maintainer=\"$SPK_MAINT\" >> $INFO_FILE
-echo arch=\"$SPK_ARCH\" >> $INFO_FILE
+echo arch=\"noarch\" >> $INFO_FILE
 echo reloadui=\"$SPK_RELOADUI\" >> $INFO_FILE
 
 mkdir -p $SPK_DIR/scripts

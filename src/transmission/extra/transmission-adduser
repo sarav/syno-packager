@@ -59,7 +59,7 @@ if [ "$userpwd" = "" ]; then
 fi
 
 # Find the path to the user's home dir.
-userhome=`su $username -s /bin/sh -c "echo \\$HOME"`
+userhome=`su "$username" -s /bin/sh -c "echo \\$HOME"`
 if [ $? -ne 0 ]; then
 	echo "Invalid user name $username !"
 	exit 1
@@ -76,17 +76,17 @@ fi
 # Generate the path to the dir where transmission stores the settings.
 # Create it if it's not there already.
 configdir=$userhome/.config/transmission-daemon
-su $username -s /bin/sh -c "mkdir -p $configdir"
+su "$username" -s /bin/sh -c "mkdir -p $configdir"
 
 if [ ! -f $configdir/settings.json ]; then
 
 	sed -r "s/%RPCUSERNAME%/$username/g; s/%RPCPORT%/$port/g; s/%RPCPASSWD%/$userpwd/g" /$pkgdir/settings.json > $configdir/settings.json
-	chown $username:users $configdir/settings.json
+	chown "$username":users $configdir/settings.json
 
 	echo -n "Scrambling password... "
-	su $username -s /bin/sh -c "transmission-daemon"
+	su "$username" -s /bin/sh -c "transmission-daemon"
 	sleep 1
-	su $username -s /bin/sh -c "killall -q transmission-daemon"
+	su "$username" -s /bin/sh -c "killall -q transmission-daemon"
 	sleep 1
 	echo "Done."
 else
@@ -96,7 +96,7 @@ fi
 
 if [ $startdmn -eq 1 ]; then
 	echo -n "Starting transmission daemon for this user... "
-	su $username -s /bin/sh -c "transmission-daemon"
+	su "$username" -s /bin/sh -c "transmission-daemon"
 	echo "Done."
 fi
 

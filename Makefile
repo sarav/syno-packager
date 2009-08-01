@@ -78,7 +78,7 @@ check-arch:
 
 archs:
 	@echo List of supported architectures:
-	@grep ^[^#] arch-target.map | cut -d: -f1
+	@grep ^[^#] arch-target.map | cut -d: -f1,3 --output-delimiter="		"
 
 help:
 	@echo

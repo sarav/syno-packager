@@ -1,5 +1,5 @@
-88f5281:arm-marvell-linux-gnu
-ppc824x:powerpc-linux
-ppc853x:powerpc-linux-gnuspe
-ppc854x:powerpc-linux-gnuspe
-88f6281:arm-none-linux-gnueabi
+88f5281:arm-marvell-linux-gnu:DS 107+, DS 207+, CS 407, RS 407
+ppc824x:powerpc-linux:DS 207, DS 209j, CS 407e
+ppc853x:powerpc-linux-gnuspe:DS 109+, DS 209+, DS 409+, DS 509+, RS 409+, RS 409RP+
+ppc854x:powerpc-linux-gnuspe:DS 408, DS 508, RS 408, RS 408RP
+88f6281:arm-none-linux-gnueabi:DS 109, DS 209, DS 409, DS 409slim, RS 409

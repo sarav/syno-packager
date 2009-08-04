@@ -3,3 +3,4 @@ ppc824x:powerpc-linux:DS 207, DS 209j, CS 407e
 ppc853x:powerpc-linux-gnuspe:DS 109+, DS 209+, DS 409+, DS 509+, RS 409+, RS 409RP+
 ppc854x:powerpc-linux-gnuspe:DS 408, DS 508, RS 408, RS 408RP
 88f6281:arm-none-linux-gnueabi:DS 109, DS 209, DS 409, DS 409slim, RS 409
+powerpc:powerpc-linux:DS 106j, DS 107, DS 107e, DS 108j, DS 109j

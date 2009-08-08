@@ -56,9 +56,11 @@ TEMPROOT=$(PWD)/$(OUT_DIR)/temproot
 ROOT=$(PWD)/$(OUT_DIR)/root
 
 INSTALL_TGTS=$(INSTALL_PKG)
+# If install dependencies are specified, add them to the install list.
 ifneq ($(strip $(INSTALL_DEPS)),)
 INSTALL_TGTS+=$(INSTALL_DEPS)
 endif
+# The rest of the packages are just compiletime dependencies.
 SUPPORT_TGTS=$(filter-out $(INSTALL_TGTS), $(PKGS_NOVER))
 
 # Environment variables common to all package compilation

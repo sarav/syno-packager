@@ -77,10 +77,16 @@ check-arch:
 	@grep ^$(ARCH): arch-target.map > /dev/null
 	@echo Yes.
 	@echo Target: $(TARGET)
+	@rm out/arch
+	cd out && ln -s -T $(ARCH) arch
 
 archs:
 	@echo List of supported architectures:
 	@grep ^[^#] arch-target.map | cut -d: -f1,3 --output-delimiter="		"
+
+pkgs:
+	@echo List of packages:
+	@echo $(PKGS_NOVER)
 
 help:
 	@echo

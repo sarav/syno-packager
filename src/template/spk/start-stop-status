@@ -22,13 +22,16 @@ case $1 in
 start)
 	echo Starting...
 	exit 0;;
-stop)
+stop|killall)
 	echo Stopping...
 	exit 0;;
 status)
 	# 0 - running
 	# 1 - stopped
 	echo Status:
+	exit 0;;
+log)
+	echo No logs.
 	exit 0;;
 esac
 

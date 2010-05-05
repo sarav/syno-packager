@@ -54,7 +54,7 @@ start)
 	echo Starting...
 	start_daemon
 	daemon_status;;
-stop)
+stop|killall)
 	echo Stopping...
 	stop_daemon
 	exit 0;;
@@ -67,6 +67,9 @@ status)
 	# 0 - running
 	# 1 - stopped
 	daemon_status;;
+log)
+	echo No logs.
+	exit 0;;
 esac
 
 exit 1

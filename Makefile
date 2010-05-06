@@ -68,16 +68,18 @@ PATH:=$(PWD)/$(CC_PATH)/bin:$(PATH)
 CFLAGS=-I$(PWD)/$(CC_PATH)/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include
 LDFLAGS=-L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
 
-all: check-arch $(INSTALL_PKG)
+all: out check-arch $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
 	@echo
 
+out:
+	@mkdir -p out
 check-arch:
 	@echo -n "Checking whether architecture $(ARCH) is supported... "
 	@grep ^$(ARCH): arch-target.map > /dev/null
 	@echo Yes.
 	@echo Target: $(TARGET)
-	@rm out/arch
+	@rm -f out/arch
 	cd out && ln -s -T $(ARCH) arch
 
 archs:

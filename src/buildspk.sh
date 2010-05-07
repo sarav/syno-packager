@@ -66,6 +66,13 @@ OUT_DIR=out/$SPK_ARCH
 SPK_DIR=$OUT_DIR/spk
 INFO_FILE=$SPK_DIR/INFO
 
+# Get optional meta info for the package.
+if [ -f src/$SPK_NAME/METAINFO ]; then
+	. src/$SPK_NAME/METAINFO
+fi
+# Fix up values obtained from METAINFO
+meta_version=${meta_version:+-$meta_version}
+
 mkdir -p $SPK_DIR
 
 echo package=\"$SPK_NAME\" > $INFO_FILE
@@ -86,8 +93,10 @@ if [ -d src/$SPK_NAME/extra ]; then
 	cp -r src/$SPK_NAME/extra $OUT_DIR/root/extra
 fi
 
+SPK_FILENAME=${SPK_NAME}-${SPK_VERSION}-${SPK_ARCH}${meta_version}.spk
+
 cd $OUT_DIR/root && tar czf ../../../$SPK_DIR/package.tgz *
 cd ../../../$SPK_DIR
-rm -f ../../$SPK_NAME-$SPK_VERSION-$SPK_ARCH.spk
-tar cf ../../$SPK_NAME-$SPK_VERSION-$SPK_ARCH.spk *
+rm -f ../../$SPK_FILENAME
+tar cf ../../$SPK_FILENAME *
 

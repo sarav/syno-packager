@@ -17,44 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ "$1" != "" ]; then
-	SPK_NAME=$1
-fi
-if [ "$2" != "" ]; then
-	SPK_VERSION=$2
-fi
-if [ "$3" != "" ]; then
-	SPK_DESC=$3
-fi
-if [ "$4" != "" ]; then
-	SPK_MAINT=$4
-fi
-if [ "$5" != "" ]; then
-	SPK_ARCH=$5
-fi
-if [ "$6" != "" ]; then
-	SPK_RELOADUI=$6
-fi
+SPK_NAME=${1:-$SPK_NAME}
+SPK_VERSION=${2:-$SPK_VERSION}
+SPK_DESC=${3:-$SPK_DESC}
+SPK_MAINT=${4:-$SPK_MAINT}
+SPK_ARCH=${5:-$SPK_ARCH}
+SPK_RELOADUI=${6:-$SPK_RELOADUI}
+
+SPK_VERSION=${SPK_VERSION:-"unknown"}
+SPK_DESC=${SPK_DESC:-"No description"}
+SPK_MAINT=${SPK_MAINT:-"Unknown"}
+SPK_ARCH=${SPK_ARCH:-"noarch"}
+SPK_RELOADUI=${SPK_RELOADUI:-"yes"}
 
 if [ "$SPK_NAME" = "" ]; then
 	echo Need at least a package name.
 	exit 1
-fi
-
-if [ "$SPK_VERSION" = "" ]; then
-	SPK_VERSION=unknown
-fi
-if [ "$SPK_DESC" = "" ]; then
-	SPK_DESC="No description"
-fi
-if [ "$SPK_MAINT" = "" ]; then
-	SPK_MAINT=Unknown
-fi
-if [ "$SPK_ARCH" = "" ]; then
-	SPK_ARCH=noarch
-fi
-if [ "$SPK_RELOADUI" = "" ]; then
-	SPK_RELOADUI=yes
 fi
 
 if [ ! -d out ]; then

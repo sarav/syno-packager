@@ -19,21 +19,25 @@
 
 SPK_NAME=${1:-$SPK_NAME}
 SPK_VERSION=${2:-$SPK_VERSION}
-SPK_DESC=${3:-$SPK_DESC}
-SPK_MAINT=${4:-$SPK_MAINT}
-SPK_ARCH=${5:-$SPK_ARCH}
-SPK_RELOADUI=${6:-$SPK_RELOADUI}
-
-SPK_VERSION=${SPK_VERSION:-"unknown"}
-SPK_DESC=${SPK_DESC:-"No description"}
-SPK_MAINT=${SPK_MAINT:-"Unknown"}
-SPK_ARCH=${SPK_ARCH:-"noarch"}
-SPK_RELOADUI=${SPK_RELOADUI:-"yes"}
 
 if [ "$SPK_NAME" = "" ]; then
 	echo Need at least a package name.
 	exit 1
 fi
+
+# Get optional meta info for the package.
+if [ -f src/$SPK_NAME/METAINFO ]; then
+	. src/$SPK_NAME/METAINFO
+fi
+# Fix up values obtained from METAINFO
+meta_version=${meta_version:+-$meta_version}
+
+# Set up defaults values.
+SPK_VERSION=${SPK_VERSION:-"unknown"}
+SPK_DESC=${SPK_DESC:-"No description"}
+SPK_MAINT=${SPK_MAINT:-"Unknown"}
+SPK_ARCH=${SPK_ARCH:-"noarch"}
+SPK_RELOADUI=${SPK_RELOADUI:-"yes"}
 
 if [ ! -d out ]; then
 	echo Are you running this from a dir other than the repo root?
@@ -43,13 +47,6 @@ fi
 OUT_DIR=out/$SPK_ARCH
 SPK_DIR=$OUT_DIR/spk
 INFO_FILE=$SPK_DIR/INFO
-
-# Get optional meta info for the package.
-if [ -f src/$SPK_NAME/METAINFO ]; then
-	. src/$SPK_NAME/METAINFO
-fi
-# Fix up values obtained from METAINFO
-meta_version=${meta_version:+-$meta_version}
 
 mkdir -p $SPK_DIR
 

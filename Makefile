@@ -177,14 +177,9 @@ SPK_VERSION:=$(SPK_VERSION:$(INSTALL_PKG)%=%)
 # The "-" needs to be removed separately.
 SPK_VERSION:=$(SPK_VERSION:-%=%)
 
-SPK_DESC="Tranmission bittorrent client that can be controlled through several remote and Web UIs."
-SPK_MAINT="sarav.devel@gmail.com"
 SPK_ARCH="$(ARCH)"
-SPK_RELOADUI="no"
 
 spk:
 	rm -rf $(OUT_DIR)/spk
-	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_DESC=$(SPK_DESC) \
-	SPK_MAINT=$(SPK_MAINT) SPK_ARCH=$(SPK_ARCH) \
-	SPK_RELOADUI=$(SPK_RELOADUI) \
+	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) \
 	./src/buildspk.sh

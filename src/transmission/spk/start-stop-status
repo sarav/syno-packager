@@ -39,7 +39,7 @@ stop_daemon() {
 }
 
 daemon_status() {
-	procs=`ps -ef | grep transmission-daemon | grep -v grep`
+	procs=`ps aux | grep transmission-daemon | grep -v grep`
 	if [ "$procs" = "" ]; then
 		echo Not running.
 		exit 1

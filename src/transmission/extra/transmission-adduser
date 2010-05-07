@@ -19,17 +19,24 @@
 
 
 startdmn=0
+newsettings=0
 userlist=/usr/local/etc/transmission.users
 
 if [ "$1" = "-s" ]; then
 	shift
 	startdmn=1
 fi
+if [ "$1" = "-f" ]; then
+	shift
+	newsettings=1
+fi
 
 if [ "$1" = "" -o "$2" = "" ]; then
-	echo "`basename $0` [-s] <username> <webui port> [<webui passwd>]"
+	echo "`basename $0` [-s] [-f] <username> <webui port> [<webui passwd>]"
 	echo "<webui passwd> defaults to <username>!!!"
 	echo "Use -s to also start the transmission daemon for only this user."
+	echo "Use -f to force overwrite of existing settings."
+	echo "If you use -s and -f at the same time, you have to specify -s first."
 	exit 1
 fi
 
@@ -78,7 +85,7 @@ fi
 configdir=$userhome/.config/transmission-daemon
 su "$username" -s /bin/sh -c "mkdir -p $configdir"
 
-if [ ! -f $configdir/settings.json ]; then
+if [ ! -f $configdir/settings.json -o $newsettings -eq 1 ]; then
 
 	sed -r "s/%RPCUSERNAME%/$username/g; s/%RPCPORT%/$port/g; s/%RPCPASSWD%/$userpwd/g" /$pkgdir/settings.json > $configdir/settings.json
 	chown "$username":users $configdir/settings.json

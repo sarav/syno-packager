@@ -20,6 +20,9 @@
 # To compile for another target without changing the Makefile, run:
 # make ARCH=<arch name>
 ARCH=88f5281
+ARCHS=$(shell cat arch-target.map | cut -d: -f1)
+ARCHS_BUGGY=88f6281
+ARCHS_EASY=$(filter-out $(ARCHS_BUGGY), $(ARCHS))
 
 # Target name to be used for the configure script.
 TARGET=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 2)
@@ -72,15 +75,23 @@ all: out check-arch $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
 	@echo
 
+buildall: $(ARCHS_EASY)
+
+$(ARCHS): out
+	@echo Making SPK for arch $@...
+	@mkdir -p out/logs
+	@nice $(MAKE) ARCH=$@ &> out/logs/$@.log
+	@nice $(MAKE) ARCH=$@ spk >> out/logs/$@.log 2>&1
+	@echo Done $@.
+
 out:
 	@mkdir -p out
+
 check-arch:
 	@echo -n "Checking whether architecture $(ARCH) is supported... "
 	@grep ^$(ARCH): arch-target.map > /dev/null
 	@echo Yes.
 	@echo Target: $(TARGET)
-	@rm -f out/arch
-	cd out && ln -s -T $(ARCH) arch
 
 archs:
 	@echo List of supported architectures:

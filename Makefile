@@ -111,6 +111,9 @@ precomp/$(ARCH):
 	mkdir -p precomp/$(ARCH)
 	tar xf ext/precompiled/$(ARCH).tar.* -C precomp/$(ARCH)
 
+# For each package, create a <outdir>/<package>.unpack target that unpacks the
+# source to <outdir>/<package name with version> and creates a symlink called
+# <outdir>/<package> that points to it.
 $(PKGS_NOVER:%=$(OUT_DIR)/%.unpack):
 	@echo $@ ----\> $^
 	mkdir -p $(OUT_DIR)
@@ -118,6 +121,10 @@ $(PKGS_NOVER:%=$(OUT_DIR)/%.unpack):
 	cd $(OUT_DIR)/ && ln -s $(patsubst %.unpack,%,$(notdir $@))* $(patsubst %.unpack,%,$(notdir $@))
 	touch $@
 
+# For each standard package, create a <outdir>/<package>/syno.config target.
+# This target <prefix>/syno.config depends on <prefix>.unpack and
+# precomp/<arch> and handles calling the standard ./configure script with the
+# right options.
 $(STD_PKGS:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
@@ -128,24 +135,37 @@ $(STD_PKGS:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precomp/$(ARCH)
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
+# For each package to be installed, create a <outdir>/<package>/syno.install.
+# This target <prefix>/syno.install depends on <prefix>/syno.config and
+# handles calling make and make install to install the package in "root".
 $(INSTALL_TGTS:%=$(OUT_DIR)/%/syno.install): $(OUT_DIR)/%/syno.install: $(OUT_DIR)/%/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@)
 	make -C $(dir $@) DESTDIR=$(ROOT) INSTALL_PREFIX=$(ROOT) install
 	touch $@
 
+# For each package needed just for compilation, create a
+# <outdir>/<package>/syno.install.  This target <prefix>/syno.install depends
+# on <prefix>/syno.config and handles calling make and make install to install
+# the package in "root".
 $(SUPPORT_TGTS:%=$(OUT_DIR)/%/syno.install): $(OUT_DIR)/%/syno.install: $(OUT_DIR)/%/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@)
 	make -C $(dir $@) DESTDIR=$(TEMPROOT) INSTALL_PREFIX=$(TEMPROOT) install
 	touch $@
 
+# For each package, create a easy to use target called <package> that depends
+# on <outdir>/<package>/syno.install
 $(PKGS_NOVER): %: $(OUT_DIR)/%/syno.install
 	@echo $@ ----\> $^
 
+# For each package, create a easy to use <package>.clean target that deletes
+# all <outdir>/<package>*
 $(PKGS_NOVER:%=%.clean):
 	rm -rf $(OUT_DIR)/$(patsubst %.clean,%, $@)*
 
+# Configure non-standard packages. They have the same dependency as standard
+# packages, but need different steps for configuring the package.
 $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/openssl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(OUT_DIR)/openssl && \

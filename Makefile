@@ -24,6 +24,8 @@ ARCHS=$(shell cat arch-target.map | cut -d: -f1)
 ARCHS_BUGGY=88f6281
 ARCHS_EASY=$(filter-out $(ARCHS_BUGGY), $(ARCHS))
 
+MODELS=$(shell cat arch-target.map | cut -d: -f3 | sed -e 's/S /S/g; s/, / /g')
+
 # Target name to be used for the configure script.
 TARGET=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 2)
 # Path to the compiler
@@ -83,6 +85,9 @@ $(ARCHS): out
 	@nice $(MAKE) ARCH=$@ &> out/logs/$@.log
 	@nice $(MAKE) ARCH=$@ spk >> out/logs/$@.log 2>&1
 	@echo Done $@.
+
+$(MODELS):
+	make $(shell grep $@[,.] arch-target.map | cut -d: -f1)
 
 out:
 	@mkdir -p out

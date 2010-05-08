@@ -87,7 +87,7 @@ $(ARCHS): out
 	@echo Done $@.
 
 $(MODELS):
-	make $(shell grep $@[,.] arch-target.map | cut -d: -f1)
+	$(MAKE) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
 
 out:
 	@mkdir -p out

@@ -17,5 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
+mv `dirname $0`/transmission.users /usr/local/etc/transmission.users
+echo "Upgrage completed successfully." > $SYNOPKG_TEMP_LOGFILE
 
 exit 0

@@ -17,5 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
+`dirname $0`/preinst
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+mv /usr/local/etc/transmission.users `dirname $0`/transmission.users
 
 exit 0

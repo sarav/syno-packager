@@ -90,6 +90,8 @@ if [ ! -f $configdir/settings.json -o $newsettings -eq 1 ]; then
 	sed -r "s/%RPCUSERNAME%/$username/g; s/%RPCPORT%/$port/g; s/%RPCPASSWD%/$userpwd/g" /$pkgdir/settings.json > $configdir/settings.json
 	chown "$username":users $configdir/settings.json
 
+	# Intentionally not using transmission-wrapper since we are killing the
+	# daemon immediately.
 	echo -n "Scrambling password... "
 	su "$username" -s /bin/sh -c "transmission-daemon"
 	sleep 1
@@ -103,7 +105,7 @@ fi
 
 if [ $startdmn -eq 1 ]; then
 	echo -n "Starting transmission daemon for this user... "
-	su "$username" -s /bin/sh -c "transmission-daemon"
+	su "$username" -s /bin/sh -c "transmission-wrapper &"
 	echo "Done."
 fi
 

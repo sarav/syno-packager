@@ -26,12 +26,13 @@ start_daemon() {
 	fi
 	for u in $ulist
 	do
-		su $u -s /bin/sh -c "transmission-daemon"
+		su $u -s /bin/sh -c "transmission-wrapper &"
 	done
 	return 0
 }
 
 stop_daemon() {
+	killall transmission-wrapper
 	# Need to kill 2-3 times to work
 	killall transmission-daemon
 	killall transmission-daemon
@@ -53,9 +54,11 @@ case $1 in
 start)
 	echo Starting...
 	start_daemon
+	sleep 2
 	daemon_status;;
 stop|killall)
 	echo Stopping...
+	sleep 2
 	stop_daemon
 	exit 0;;
 restart)

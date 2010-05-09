@@ -51,7 +51,7 @@ INFO_FILE=$SPK_DIR/INFO
 mkdir -p $SPK_DIR
 
 echo package=\"$SPK_NAME\" > $INFO_FILE
-echo version=\"$SPK_VERSION\" >> $INFO_FILE
+echo version=\"${SPK_VERSION}${meta_version}\" >> $INFO_FILE
 echo description=\"$SPK_DESC\" >> $INFO_FILE
 echo maintainer=\"$SPK_MAINT\" >> $INFO_FILE
 echo arch=\"noarch\" >> $INFO_FILE

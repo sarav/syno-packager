@@ -9,7 +9,7 @@
     "bind-address-ipv4": "0.0.0.0", 
     "bind-address-ipv6": "::", 
     "blocklist-enabled": false, 
-    "download-dir": "~\/download", 
+    "download-dir": "%DLDIR%", 
     "encryption": 1, 
     "lazy-bitfield-enabled": true, 
     "message-level": 2, 

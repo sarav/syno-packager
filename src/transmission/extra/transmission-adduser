@@ -83,11 +83,13 @@ fi
 # Generate the path to the dir where transmission stores the settings.
 # Create it if it's not there already.
 configdir=$userhome/.config/transmission-daemon
+dldir=$userhome/transmission
 su "$username" -s /bin/sh -c "mkdir -p $configdir"
+su "$username" -s /bin/sh -c "mkdir -p $dldir"
 
 if [ ! -f $configdir/settings.json -o $newsettings -eq 1 ]; then
 
-	sed -r "s/%RPCUSERNAME%/$username/g; s/%RPCPORT%/$port/g; s/%RPCPASSWD%/$userpwd/g" /$pkgdir/settings.json > $configdir/settings.json
+	sed -r "s/%RPCUSERNAME%/$username/g; s/%RPCPORT%/$port/g; s/%RPCPASSWD%/$userpwd/g; s|%DLDIR%|$dldir|g" /$pkgdir/settings.json > $configdir/settings.json
 	chown "$username":users $configdir/settings.json
 
 	# Intentionally not using transmission-wrapper since we are killing the

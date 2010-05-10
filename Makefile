@@ -90,6 +90,12 @@ $(ARCHS): out
 $(MODELS):
 	$(MAKE) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
 
+hash:
+	@echo SHA1SUM:
+	@cd out && sha1sum *.spk
+	@echo MD5SUM:
+	@cd out && md5sum *.spk
+
 out:
 	@mkdir -p out
 

@@ -1,0 +1,9 @@
+The files required for the broken links can be obtained from:
+http://sourceforge.net/projects/dsgpl/files/
+
+If you don't find the required files there, please check the support
+section at www.synology.com or try their forums.
+
+For x86, use the tool chain released for DSM 2.3. The earlier ones don't
+work due to missing libraries. Some files might need to be renamed from
+.tgz to .tar.gz.

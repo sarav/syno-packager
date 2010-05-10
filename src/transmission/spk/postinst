@@ -26,6 +26,8 @@ mkdir -p /usr/local/share/transmission
 ln -s $SYNOPKG_PKGDEST/usr/local/bin/transmission-daemon /usr/local/bin/transmission-daemon
 ln -s $SYNOPKG_PKGDEST/usr/local/share/transmission/web /usr/local/share/transmission/web
 ln -s $SYNOPKG_PKGDEST/extra/transmission-adduser /usr/local/bin/transmission-adduser
+ln -s $SYNOPKG_PKGDEST/extra/transmission-deluser /usr/local/bin/transmission-deluser
+ln -s $SYNOPKG_PKGDEST/extra/transmission-setting /usr/local/bin/transmission-setting
 ln -s $SYNOPKG_PKGDEST/extra/transmission-wrapper /usr/local/bin/transmission-wrapper
 if [ -d $syno3rdpty ]; then
 	mkdir -p $syno3rdpty/transmission

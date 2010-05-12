@@ -1,6 +1,6 @@
 88f5281:arm-marvell-linux-gnu:DS107+, DS207+, CS407, RS407.
 ppc824x:powerpc-linux:DS207, DS209j, CS407e.
-ppc853x:powerpc-linux-gnuspe:DS109+, DS209+, DS209+II DS409+, DS509+, RS409+, RS409RP+, DS410.
+ppc853x:powerpc-linux-gnuspe:DS109+, DS209+, DS209+II, DS409+, DS509+, RS409+, RS409RP+, DS410.
 ppc854x:powerpc-linux-gnuspe:DS408, DS508, RS408, RS408RP.
 88f6281:arm-none-linux-gnueabi:DS109, DS209, DS409, DS409slim, RS409, DS110j, DS210j, DS410j.
 powerpc:powerpc-linux:DS106j, DS107, DS107e, DS108j, DS109j.

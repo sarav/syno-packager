@@ -46,7 +46,7 @@ INSTALL_PKG=transmission
 # installed in the device. For example, tranmission needs curl and openssl to
 # compile, but it doesn't need their libraries to be present in the target
 # since transmission is statically compiled.
-INSTALL_DEPS=
+INSTALL_DEPS=libevent
 INSTALL_PREFIX=/usr/local
 
 # Generate intermediate variables for use in rules.
@@ -126,7 +126,7 @@ help:
 	@echo
 
 # Dependency declarations.
-$(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/curl/syno.install $(OUT_DIR)/openssl/syno.install
+$(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/curl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libevent/syno.install
 
 # Unpack the toolchain
 precomp/$(ARCH):
@@ -154,6 +154,7 @@ $(STD_PKGS:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precomp/$(ARCH)
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--disable-gtk --disable-nls \
+			--enable-static --enable-daemon \
 			--prefix=$(INSTALL_PREFIX) \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@

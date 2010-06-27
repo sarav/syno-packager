@@ -22,7 +22,7 @@
 ARCH=88f5281
 ARCHS=$(shell cat arch-target.map | cut -d: -f1)
 # 88f6281 compiler is buggy.
-ARCHS_BUGGY=88f6281
+ARCHS_BUGGY=
 ARCHS_EASY=$(filter-out $(ARCHS_BUGGY), $(ARCHS))
 
 MODELS=$(shell cat arch-target.map | cut -d: -f3 | sed -e 's/S /S/g; s/, / /g')

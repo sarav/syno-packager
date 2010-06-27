@@ -20,11 +20,12 @@
 # Restart transmission only if it had run for atleast this many seconds.
 min_run_secs=30
 run_time=$min_run_secs
+libdir=/var/packages/transmission/target/usr/local/lib
 
 while [ $run_time -ge $min_run_secs ];
 do
 	start_time=`date +%s`
-	transmission-daemon -f
+	LD_LIBRARY_PATH=$libdir transmission-daemon -f
 	time=`date +%s`
 	run_time=$(($time - $start_time))
 	echo "Transmission ran for $run_time seconds."

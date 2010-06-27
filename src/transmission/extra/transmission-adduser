@@ -21,6 +21,7 @@
 startdmn=0
 newsettings=0
 userlist=/usr/local/etc/transmission.users
+libdir=/var/packages/transmission/target/usr/local/lib
 
 if [ "$1" = "-s" ]; then
 	shift
@@ -95,7 +96,7 @@ if [ ! -f $configdir/settings.json -o $newsettings -eq 1 ]; then
 	# Intentionally not using transmission-wrapper since we are killing the
 	# daemon immediately.
 	echo -n "Scrambling password... "
-	su "$username" -s /bin/sh -c "transmission-daemon"
+	su "$username" -s /bin/sh -c "LD_LIBRARY_PATH=$libdir transmission-daemon"
 	sleep 1
 	su "$username" -s /bin/sh -c "killall -q transmission-daemon"
 	sleep 1

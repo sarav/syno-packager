@@ -26,7 +26,7 @@ start_daemon() {
 	fi
 	for u in $ulist
 	do
-		su $u -s /bin/sh -c "LD_LIBRARY_PATH=/var/packages/transmission/target/usr/local/lib transmission-wrapper &"
+		su $u -s /bin/sh -c "transmission-wrapper &"
 	done
 	return 0
 }

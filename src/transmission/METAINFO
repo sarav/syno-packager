@@ -1,4 +1,4 @@
 SPK_DESC="Tranmission bittorrent client that can be controlled through several remote and Web UIs."
 SPK_MAINT="sarav.devel@gmail.com"
 SPK_RELOADUI="no"
-meta_version="spk-2.0.3"
+meta_version="spk-2.0.4"

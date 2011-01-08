@@ -29,14 +29,16 @@ MODELS=$(shell cat arch-target.map | cut -d: -f3 | sed -e 's/S /S/g; s/, / /g')
 
 # Target name to be used for the configure script.
 TARGET=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 2)
+# Prefix for CC_PATH
+CC_PATH_PREFIX=$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)
 # Path to the compiler
-CC_PATH=precomp/$(ARCH)/$(TARGET)
+CC_PATH=precomp/$(ARCH)$(CC_PATH_PREFIX)/$(TARGET)
 # Output dir
 OUT_DIR=out/$(ARCH)
 
 # Packages that don't follow the GNU ./configure script standard. These
 # packages need to have specific out/<arch>/<pkg>/syno.config rule defined.
-NONSTD_PKGS=openssl
+NONSTD_PKGS=openssl zlib curl
 
 # The main package you are trying to build. Ex: transmission
 INSTALL_PKG=transmission
@@ -46,15 +48,16 @@ INSTALL_PKG=transmission
 # installed in the device. For example, tranmission needs curl and openssl to
 # compile, but it doesn't need their libraries to be present in the target
 # since transmission is statically compiled.
-INSTALL_DEPS=libevent
-INSTALL_PREFIX=/usr/local
+INSTALL_DEPS=libevent zlib
+INSTALL_PREFIX=/
 
 # Generate intermediate variables for use in rules.
 PKG_TARS=$(wildcard ext/libs/* ext/exec/*)
 PKGS=$(notdir $(PKG_TARS))
+PKGS:=$(PKGS:.tgz=)
 PKGS:=$(PKGS:.tar.gz=)
 PKGS:=$(PKGS:.tar.bz2=)
-PKGS_NOVER=$(foreach pkg, $(PKGS), $(shell echo $(pkg) | sed -r -e 's/(.*)-[0-9][0-9.a-zRC]+$$/\1/g'))
+PKGS_NOVER=$(foreach pkg, $(PKGS), $(shell echo $(pkg) | sed -r -e 's/(.*)-[0-9][0-9.a-zRC]+(-stable|-gpl)?$$/\1/g'))
 
 PKG_DESTS=$(PKGS_NOVER:%=$(OUT_DIR)/%.unpack)
 STD_PKGS=$(filter-out $(NONSTD_PKGS), $(PKGS_NOVER))
@@ -71,8 +74,9 @@ SUPPORT_TGTS=$(filter-out $(INSTALL_TGTS), $(PKGS_NOVER))
 
 # Environment variables common to all package compilation
 PATH:=$(PWD)/$(CC_PATH)/bin:$(PATH)
+PKG_CONFIG_PATH:=$(ROOT)$(INSTALL_PREFIX)/lib/pkgconfig:$(TEMPROOT)$(INSTALL_PREFIX)/lib/pkgconfig
 CFLAGS=-I$(PWD)/$(CC_PATH)/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include
-LDFLAGS=-L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
+LDFLAGS=-R/usr/local/lib -L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
 
 all: out check-arch $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
@@ -113,6 +117,21 @@ pkgs:
 	@echo List of packages:
 	@echo $(PKGS_NOVER)
 
+tests:
+	@echo
+	@echo SUPPORT_TGTS : $(SUPPORT_TGTS)
+	@echo INSTALL_TGTS : $(INSTALL_TGTS)
+	@echo PKGS_NOVER : $(PKGS_NOVER)
+	@echo STD_PKGS : $(STD_PKGS)
+	@echo INSTALL_PREFIX : $(INSTALL_PREFIX)
+	@echo CC_PATH_PREFIX : $(CC_PATH_PREFIX)
+	@echo CC_PATH : $(CC_PATH)
+	@echo LDFLAGS : $(LDFLAGS)
+	@echo CFLAGS : $(CFLAGS)
+	@echo PKG_CONFIG_PATH : $(PKG_CONFIG_PATH)
+	@echo PATH : $(PATH)
+	@echo
+
 help:
 	@echo
 	@echo Help text for architecture $(ARCH):
@@ -126,13 +145,15 @@ help:
 	@echo
 
 # Dependency declarations.
-$(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/curl/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/libevent/syno.install
+$(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install
 
-# Unpack the toolchain
+# Unpack the toolchain and remove conflicting flex.
 precomp/$(ARCH):
 	grep ^$(ARCH) arch-target.map
 	mkdir -p precomp/$(ARCH)
-	tar xf ext/precompiled/$(ARCH).tar.* -C precomp/$(ARCH)
+	tar xf ext/precompiled/$(ARCH).* -C precomp/$(ARCH)
+	rm -f $(CC_PATH)/bin/flex
+	rm -f $(CC_PATH)/bin/flex++
 
 # For each package, create a <outdir>/<package>.unpack target that unpacks the
 # source to <outdir>/<package name with version> and creates a symlink called
@@ -151,6 +172,7 @@ $(PKGS_NOVER:%=$(OUT_DIR)/%.unpack):
 $(STD_PKGS:%=$(OUT_DIR)/%/syno.config): %/syno.config: %.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--disable-gtk --disable-nls \
@@ -193,8 +215,28 @@ $(PKGS_NOVER:%=%.clean):
 $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/openssl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(OUT_DIR)/openssl && \
-	./Configure.syno linux-elf-armle --prefix=$(INSTALL_PREFIX) --cc=$(TARGET)-gcc
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	./Configure gcc --prefix=$(INSTALL_PREFIX) --cross-compile-prefix=$(TARGET)-
 	touch $(OUT_DIR)/openssl/syno.config
+
+$(OUT_DIR)/zlib/syno.config: $(OUT_DIR)/zlib.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	cd $(OUT_DIR)/zlib && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	CHOST=arm-marvell-linux-gnu \
+	./configure --prefix=$(INSTALL_PREFIX)
+	touch $(OUT_DIR)/zlib/syno.config
+
+$(OUT_DIR)/curl/syno.config: $(OUT_DIR)/curl.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	cd $(OUT_DIR)/curl && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	./configure --host=$(TARGET) --target=$(TARGET) \
+			--build=i686-pc-linux \
+			--prefix=$(INSTALL_PREFIX) \
+			--with-random=/dev/urandom \
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+	touch $(OUT_DIR)/curl/syno.config
 
 unpack: precomp/$(ARCH) $(PKG_DESTS)
 
@@ -215,6 +257,7 @@ realclean: cleanall
 SPK_NAME=$(INSTALL_PKG)
 
 SPK_VERSION=$(notdir $(wildcard ext/*/$(INSTALL_PKG)*))
+SPK_VERSION:=$(SPK_VERSION:.tgz=)
 SPK_VERSION:=$(SPK_VERSION:.tar.gz=)
 SPK_VERSION:=$(SPK_VERSION:.tar.bz2=)
 SPK_VERSION:=$(SPK_VERSION:$(INSTALL_PKG)%=%)
@@ -224,6 +267,8 @@ SPK_VERSION:=$(SPK_VERSION:-%=%)
 SPK_ARCH="$(ARCH)"
 
 spk:
-	rm -rf $(OUT_DIR)/spk
+	@echo -n "Making spk $(SPK_NAME) version $(SPK_VERSION) for arch $(SPK_ARCH)..."
+	@rm -rf $(OUT_DIR)/spk
 	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) \
 	./src/buildspk.sh
+	@echo " Done"

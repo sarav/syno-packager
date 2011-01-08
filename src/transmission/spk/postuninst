@@ -26,6 +26,8 @@ rm -f /usr/local/bin/transmission-adduser
 rm -f /usr/local/bin/transmission-deluser
 rm -f /usr/local/bin/transmission-setting
 rm -f /usr/local/bin/transmission-wrapper
+rm -f /usr/local/lib/libz.so.1
+rm -f /usr/local/lib/libevent-1.4.so.2
 rm -f /usr/local/share/transmission/web
 rmdir /usr/local/share/transmission
 rm -rf $syno3rdpty/transmission

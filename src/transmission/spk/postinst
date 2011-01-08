@@ -22,9 +22,12 @@ syno3rdpty=/usr/syno/synoman/webman/3rdparty
 
 mkdir -p /usr/local/bin
 mkdir -p /usr/local/etc
+mkdir -p /usr/local/lib
 mkdir -p /usr/local/share/transmission
-ln -s $SYNOPKG_PKGDEST/usr/local/bin/transmission-daemon /usr/local/bin/transmission-daemon
-ln -s $SYNOPKG_PKGDEST/usr/local/share/transmission/web /usr/local/share/transmission/web
+ln -s $SYNOPKG_PKGDEST/bin/transmission-daemon /usr/local/bin/transmission-daemon
+ln -s $SYNOPKG_PKGDEST/lib/libz.so.1 /usr/local/lib/libz.so.1
+ln -s $SYNOPKG_PKGDEST/lib/libevent-1.4.so.2 /usr/local/lib/libevent-1.4.so.2
+ln -s $SYNOPKG_PKGDEST/share/transmission/web /usr/local/share/transmission/web
 ln -s $SYNOPKG_PKGDEST/extra/transmission-adduser /usr/local/bin/transmission-adduser
 ln -s $SYNOPKG_PKGDEST/extra/transmission-deluser /usr/local/bin/transmission-deluser
 ln -s $SYNOPKG_PKGDEST/extra/transmission-setting /usr/local/bin/transmission-setting

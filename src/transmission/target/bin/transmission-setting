@@ -1,0 +1,95 @@
+#!/bin/sh
+# Copyright 2010 Saravana Kannan & Antoine Bertin
+# <sarav dot devel [ignore this] at gmail period com>
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+TRDIR=/usr/local/transmission
+TRSSS=/usr/local/etc/rc.d/transmission.sh
+TRVAR=$TRDIR/var
+TRLIB=$TRDIR/lib
+TRETC=$TRDIR/etc
+TRUSR=$TRETC/users
+TREXE=$TRDIR/bin/transmission-daemon
+
+if [ $# -lt 3 ]; then
+	echo "`basename $0` <username> <setting> <new value>"
+	exit 1
+fi
+
+PARAM_USERNAME=$1
+PARAM_SETTING=$2
+PARAM_NEWVAL=$3
+
+# Find the path to the user's home dir
+USERHOME=`su "$PARAM_USERNAME" -s /bin/sh -c "echo \\$HOME" 2> /dev/null`
+if [ $? -ne 0 ]; then
+	echo "Invalid user name $PARAM_USERNAME !"
+	exit 1
+fi
+
+# Generate the path to the transmission settings file
+CONFIGFILE=$USERHOME/.config/transmission-daemon/settings.json
+
+# Check that it's present
+if [ "$USERHOME" = "" -o ! -f $CONFIGFILE ]; then
+	echo "Unable to find settings file for the user $PARAM_USERNAME !"
+	exit 1
+fi
+
+# Kill transmission
+$TRSSS stop $PARAM_USERNAME
+
+# Retrieve sed parameters from setting
+quote=0
+sname=""
+case $PARAM_SETTING in
+	port)
+		sname="rpc-port"
+		;;
+	password)
+		sname="rpc-password"
+		quote=1
+		;;
+	downloaddir)
+		sname="download-dir"
+		quote=1
+		;;
+	*)
+		echo "Unknown setting $PARAM_SETTING !"
+		exit 1
+		;;
+esac
+
+# Replace config parameter
+if [ $quote -eq 1 ]; then
+	sed -ir "s|\"$sname\": .*,|\"$sname\": \"$PARAM_NEWVAL\",|g" $CONFIGFILE
+else
+	sed -ir "s|\"$sname\": .*,|\"$sname\": $PARAM_NEWVAL,|g" $CONFIGFILE
+fi
+
+# Replace in the map file
+if [ "$sname" == "rpc-port" ]; then
+	sed -ir "s/^(${PARAM_USERNAME}:).*$/\1$PARAM_NEWVAL/" $TRUSR
+fi
+
+# Output success
+echo "Setting updated successfully"
+
+# Start the daemon
+$TRSSS start $PARAM_USERNAME

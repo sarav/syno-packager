@@ -1,6 +1,6 @@
 #!/bin/sh
-# Copyright 2009 Saravana Kannan
-# <sarav dot devel [ignore this] at gmail period com>
+# Copyright 2010 Antoine Bertin
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
 #
 # This file is part of syno-packager.
 #
@@ -17,11 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-`dirname $0`/preinst
-if [ $? -ne 0 ]; then
-	exit 1
-fi
+. `dirname $0`/prepost-common
 
-mv /usr/local/etc/transmission.users `dirname $0`/transmission.users
-
-exit 0
+`basename $0` > $SYNOPKG_TEMP_LOGFILE

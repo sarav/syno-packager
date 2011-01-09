@@ -1,0 +1,82 @@
+#!/bin/sh
+# Copyright 2010 Saravana Kannan & Antoine Bertin
+# <sarav dot devel [ignore this] at gmail period com>
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+TRDIR=/usr/local/transmission
+TRSSS=/usr/local/etc/rc.d/transmission.sh
+TRVAR=$TRDIR/var
+TRLIB=$TRDIR/lib
+TRETC=$TRDIR/etc
+TRUSR=$TRETC/users
+TREXE=$TRDIR/bin/transmission-daemon
+
+# Parameters
+if [ $# -lt 3 ]; then
+	echo "`basename $0` <username> <webui port> <webui passwd>"
+	exit 1
+fi
+
+PARAM_USERNAME=$1
+PARAM_PORT=$2
+PARAM_PASSWORD=$3
+
+# Test if user already added
+while IFS=: read user port
+do
+	if [ $user = $PARAM_USERNAME ]; then
+		echo "User $PARAM_USERNAME already has permission to use transmission !"
+		exit 2
+	fi
+done < $TRUSR
+
+# Find the path to the user's home dir
+USERHOME=`su "$PARAM_USERNAME" -s /bin/sh -c "echo \\$HOME" 2> /dev/null`
+if [ $? -ne 0 ]; then
+	echo "Invalid user name $PARAM_USERNAME !"
+	exit 1
+fi
+
+# Check that it's present.
+if [ "$USERHOME" = "" -o ! -d "$USERHOME" ]; then
+	echo "User $PARAM_USERNAME has no home directory !"
+	echo "Did you enable 'User Home service' from the Management UI ?"
+	echo "Should be under Management UI -> Privileges -> User -> User home button."
+	exit 1
+fi
+
+# Generate the path to the dir where transmission stores the settings.
+# Create it if it's not there already.
+USERCONFIGDIR=$USERHOME/.config/transmission-daemon
+USERDLDIR=$USERHOME/transmission
+su $PARAM_USERNAME -s /bin/sh -c "mkdir -p $USERCONFIGDIR"
+su $PARAM_USERNAME -s /bin/sh -c "mkdir -p $USERDLDIR"
+
+# Create the setting file and add user to the user list
+rm -f $USERCONFIGDIR/settings.json
+sed -r "s/%RPCUSERNAME%/$PARAM_USERNAME/g; s/%RPCPORT%/$PARAM_PORT/g; s/%RPCPASSWD%/$PARAM_PASSWORD/g; s|%DLDIR%|$USERDLDIR|g" $TRVAR/settings.json > $USERCONFIGDIR/settings.json
+chown $PARAM_USERNAME:users $USERCONFIGDIR/settings.json
+chmod 700 $USERCONFIGDIR/settings.json
+echo "$PARAM_USERNAME:$PARAM_PORT" >> $TRUSR
+
+# Start the daemon
+$TRSSS start $PARAM_USERNAME
+
+# Output success
+echo "User $PARAM_USERNAME added successfully"

@@ -1,0 +1,75 @@
+#!/bin/sh
+# Copyright 2010 Saravana Kannan & Antoine Bertin
+# <sarav dot devel [ignore this] at gmail period com>
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+TRDIR=/usr/local/transmission
+TRSSS=/usr/local/etc/rc.d/transmission.sh
+TRVAR=$TRDIR/var
+TRLIB=$TRDIR/lib
+TRETC=$TRDIR/etc
+TRUSR=$TRETC/users
+TREXE=$TRDIR/bin/transmission-daemon
+
+if [ $# -lt 1 ]; then
+	echo "`basename $0` <username>"
+	exit 1
+fi
+
+PARAM_USERNAME=$1
+
+# Test if user exists
+USEREXISTS=0
+while IFS=: read user port
+do
+	if [ $user = $PARAM_USERNAME ]; then
+		USEREXISTS=1
+	fi
+done < $TRUSR
+if [ $USEREXISTS -eq 0 ]; then
+	echo "Not an existing transmission user."
+	exit 2
+fi
+
+# Kill the daemon
+$TRSSS stop $PARAM_USERNAME
+
+# Delete the user from the user list
+sed -i "/^${PARAM_USERNAME}:.*/d" $TRUSR
+
+# Find the path to the user's home dir
+USERHOME=`su "$PARAM_USERNAME" -s /bin/sh -c "echo \\$HOME" 2> /dev/null`
+if [ $? -ne 0 ]; then
+	echo "Invalid user name $PARAM_USERNAME !"
+	exit 1
+fi
+
+# Check that it's present
+if [ "$USERHOME" = "" -o ! -d "$USERHOME" ]; then
+	echo "User $PARAM_USERNAME has no home directory ! Nothing to delete !"
+	exit 1
+fi
+
+# Delete transmission settings
+rm -rf $USERHOME/.config/transmission-daemon
+rmdir $USERHOME/.config 2>/dev/null
+rmdir $USERHOME/transmission 2>/dev/null
+
+# Output success
+echo "User $PARAM_USERNAME deleted successfully"

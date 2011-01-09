@@ -1,0 +1,143 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Find the CPU architecture
+synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
+arch=`echo $synoinfo | cut -d_ -f2`
+isUpgrade=/tmp/transmission.upgrade
+SYNO3APP="/usr/syno/synoman/webman/3rdparty"
+TRDIR="/usr/local/transmission"
+
+preinst ()
+{
+	# Check if the architecture is supported
+	if [ "$arch" != "%SPK_ARCH%" ]; then
+		echo "Your architecture is not supported by this package, sorry."
+		echo "Architecture  : $arch"
+		echo "Synology info : $synoinfo"
+		exit 1
+	fi
+	exit 0
+}
+
+postinst ()
+{
+	# Correct the files ownership
+	chown -R root:root ${SYNOPKG_PKGDEST}
+
+	# Create the view directory
+	mkdir -p /usr/local/transmission
+	mkdir -p /usr/local/bin
+
+	# Create symlinks to the installation ditectory
+	ln -s ${SYNOPKG_PKGDEST}/bin /usr/local/transmission/bin
+	ln -s ${SYNOPKG_PKGDEST}/lib /usr/local/transmission/lib
+	ln -s ${SYNOPKG_PKGDEST}/share /usr/local/transmission/share
+	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/transmission/var
+	ln -s ${SYNOPKG_PKGDEST}/etc /usr/local/transmission/etc
+
+	# Create symlinks
+	for bin in ${SYNOPKG_PKGDEST}/bin/transmission*
+	do
+		ln -s $bin /usr/local/bin/`basename $bin`
+	done
+
+	# Link "share" folder for transmission to find shared files
+	ln -s ${SYNOPKG_PKGDEST}/share/transmission /usr/local/share/transmission
+
+	# Install the application in the main interface.
+	if [ -d $SYNO3APP ]
+	then
+		rm -f $SYNO3APP/transmission
+		ln -s $TRDIR/share/3rdparty $SYNO3APP/transmission
+	fi
+
+	# Correct the files permission
+	chmod 555 /usr/local/transmission/bin/*
+	chmod 555 /usr/local/transmission/lib/*
+	chown root:users /usr/local/transmission/var
+	chmod 775 /usr/local/transmission/var
+
+	exit 0
+}
+
+preuninst ()
+{
+	exit 0
+}
+
+postuninst ()
+{
+	# Remove symlinks
+	for bin in ${SYNOPKG_PKGDEST}/bin/transmission*
+	do
+		rm -f /usr/local/bin/`basename $bin`
+	done
+
+	# Remove symlinks from /usr/local/transmission
+	rm -f /usr/local/transmission/bin
+	rm -f /usr/local/transmission/lib
+	rm -f /usr/local/transmission/share
+	rm -f /usr/local/transmission/var
+	rm -f /usr/local/transmission/etc
+
+	# Remove "share" folder for transmission to find shared files
+	rm -f /usr/local/share/transmission
+
+	# Remove the view directory
+	rmdir /usr/local/transmission
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/transmission ]; then
+		rm -f $SYNO3APP/transmission
+	fi
+
+	exit 0
+}
+
+preupgrade ()
+{
+	# Make sure transmission is not running while we are upgrading
+	/usr/local/etc/rc.d/transmission.sh stop
+	touch $isUpgrade
+
+	# Save current state before upgrade
+	upgradedir=/`echo ${SYNOPKG_PKGDEST} | cut -d/ -f2`/@tmp/transmission-upgrade/
+	mkdir -p $upgradedir
+	if [ -d ${SYNOPKG_PKGDEST}/var ]; then
+		cp -r ${SYNOPKG_PKGDEST}/var $upgradedir/var
+	fi
+
+	exit 0
+}
+
+postupgrade ()
+{
+	# Restore state
+	upgradedir=/`echo ${SYNOPKG_PKGDEST} | cut -d/ -f2`/@tmp/transmission-upgrade/
+	if [ -d $upgradedir/var ]; then
+		cp -r $upgradedir/var ${SYNOPKG_PKGDEST}/
+		chown -R root:root ${SYNOPKG_PKGDEST}
+	fi
+
+	rm -fr $upgradedir
+	rm -f $isUpgrade
+
+	exit 0
+}

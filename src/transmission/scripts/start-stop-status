@@ -1,0 +1,160 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+TRDIR=/usr/local/transmission
+TRVAR=$TRDIR/var
+TRLIB=$TRDIR/lib
+TRETC=$TRDIR/etc
+TRUSR=$TRETC/users
+TREXE=$TRDIR/bin/transmission-daemon
+
+start_daemon ()
+{
+	# Retrieve the userlist from arguments or from file
+	if [ $# -gt 0 ]; then
+		ulist=$@
+	else
+		ulist=`cat $TRUSR | sed 's/^\(\w\+\):.*$/\1/'`
+	fi
+
+	# Check for users
+	if [ -z $ulist ]; then
+		echo "Run transmission-adduser to add Transmission usage priviliges to at least one user."
+		return 1
+	fi
+
+	# Loop over users
+	for u in $ulist
+	do
+		echo -ne "\tuser $u..."
+		su $u -s /bin/sh -c "LD_LIBRARY_PATH=$TRLIB $TREXE -x $TRVAR/$u.pid"
+		sleep 1
+		echo " Done"
+	done
+}
+
+stop_daemon ()
+{
+	# Retrieve the userlist from arguments or from file
+	if [ $# -gt 0 ]; then
+		ulist=$@
+	else
+		ulist=`cat $TRUSR | sed 's/^\(\w\+\):.*$/\1/'`
+	fi
+
+	# Check for users
+	if [ -z $ulist ]; then
+		echo "Run transmission-adduser to add Transmission usage priviliges to at least one user."
+		return 1
+	fi
+	
+	# Kill daemon for each users
+	for u in $ulist
+	do
+		echo -ne "\tuser $u..."
+		if [ -f $TRVAR/$u.pid ]; then
+			kill `cat $TRVAR/$u.pid`
+			echo " Done"
+		else
+			echo " Error : Can't find PID file !"
+		fi
+		sleep 1
+	done
+
+	# Wait until transmission is really dead (may take some time).
+	if [ $# -eq 0 ]; then
+		counter=20
+		while [ $counter -gt 0 ] 
+		do
+			daemon_status || break
+			let counter=counter-1
+			sleep 1
+		done
+	fi
+}
+
+reload_daemon ()
+{
+	for u in $ulist
+	do
+		echo -ne "\tuser $u..."
+		if [ -f $TRVAR/$u.pid ]; then
+			kill -s HUP `cat $TRVAR/$u.pid`
+			echo " Done"
+		else
+			echo " Error : Can't find PID file !"
+		fi
+		sleep 1
+	done
+}
+
+daemon_status ()
+{
+	[ "`ps aux | grep transmission-daemon | grep -v grep`" != "" ]
+}
+
+
+case $1 in
+	start)
+		shift
+		if daemon_status && [ $# == 0 ]; then
+			echo "Transmission daemon already running !"
+			exit 0
+		else
+			echo "Starting Transmission daemon for..."
+			start_daemon $@
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping Transmission daemon for..."
+		shift
+		stop_daemon $@
+		exit 0
+		;;
+	restart)
+		shift
+		stop_daemon $@
+		start_daemon $@
+		exit $?
+		;;
+	reload)
+		if daemon_status; then
+			reload_daemon
+		fi
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo "No logs"
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

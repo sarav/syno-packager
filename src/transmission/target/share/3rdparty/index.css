@@ -1,0 +1,21 @@
+body {
+	padding: 20px;
+}
+
+table {
+	border: 1px solid black;
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+td.password > input {
+	width: 160px;
+}
+
+td.port > input {
+	width: 60px;
+}
+
+#submit {
+	margin-top: 20px;
+}

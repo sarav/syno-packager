@@ -1,6 +1,6 @@
 #!/bin/sh
-# Copyright 2009 Saravana Kannan
-# <sarav dot devel [ignore this] at gmail period com>
+# Copyright 2010 Antoine Bertin
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
 #
 # This file is part of syno-packager.
 #
@@ -17,16 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
 
-# Restart transmission only if it had run for atleast this many seconds.
-min_run_secs=30
-run_time=$min_run_secs
-libdir=/var/packages/transmission/target/usr/local/lib
+. `dirname $0`/prepost-common
 
-while [ $run_time -ge $min_run_secs ];
-do
-	start_time=`date +%s`
-	LD_LIBRARY_PATH=$libdir transmission-daemon -f
-	time=`date +%s`
-	run_time=$(($time - $start_time))
-	echo "Transmission ran for $run_time seconds."
-done
+`basename $0` > $SYNOPKG_TEMP_LOGFILE

@@ -1,5 +1,6 @@
-# Copyright 2009 Saravana Kannan
+# Copyright 2010 Saravana Kannan & Antoine Bertin
 # <sarav dot devel [ignore this] at gmail period com>
+# <diaoulael dot devel [ignore this] at users.sourceforge period net>
 #
 # This file is part of syno-packager.
 #
@@ -76,7 +77,7 @@ SUPPORT_TGTS=$(filter-out $(INSTALL_TGTS), $(PKGS_NOVER))
 PATH:=$(PWD)/$(CC_PATH)/bin:$(PATH)
 PKG_CONFIG_PATH:=$(ROOT)$(INSTALL_PREFIX)/lib/pkgconfig:$(TEMPROOT)$(INSTALL_PREFIX)/lib/pkgconfig
 CFLAGS=-I$(PWD)/$(CC_PATH)/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include
-LDFLAGS=-R/usr/local/lib -L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
+LDFLAGS=-R/usr/local/$(INSTALL_PKG)/lib -L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
 
 all: out check-arch $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
@@ -95,9 +96,9 @@ $(MODELS):
 	$(MAKE) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
 
 hash:
-	@echo SHA1SUM:
+	@echo "SHA1SUM:"
 	@cd out && sha1sum *.spk
-	@echo MD5SUM:
+	@echo "MD5SUM:"
 	@cd out && md5sum *.spk
 
 out:
@@ -269,6 +270,6 @@ SPK_ARCH="$(ARCH)"
 spk:
 	@echo -n "Making spk $(SPK_NAME) version $(SPK_VERSION) for arch $(SPK_ARCH)..."
 	@rm -rf $(OUT_DIR)/spk
-	@SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) \
+	@INSTALL_PREFIX=$(INSTALL_PREFIX) SPK_NAME=$(SPK_NAME) SPK_VERSION=$(SPK_VERSION) SPK_ARCH=$(SPK_ARCH) \
 	./src/buildspk.sh
 	@echo " Done"

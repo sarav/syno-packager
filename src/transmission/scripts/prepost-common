@@ -27,10 +27,8 @@ TRDIR="/usr/local/transmission"
 preinst ()
 {
 	# Check if the architecture is supported
-	if [ "$arch" != "%SPK_ARCH%" ]; then
-		echo "Your architecture is not supported by this package, sorry."
-		echo "Architecture  : $arch"
-		echo "Synology info : $synoinfo"
+	if ! echo "$arch" | grep -q "%SPK_ARCH%"; then
+		echo "Your architecture is not supported by this package. Architecture  : '$arch'. Synology info : '$synoinfo'. Required : '%SPK_ARCH%'."
 		exit 1
 	fi
 	exit 0

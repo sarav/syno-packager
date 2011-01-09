@@ -1,0 +1,106 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Find the CPU architecture
+synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
+arch=`echo $synoinfo | cut -d_ -f2`
+
+preinst ()
+{
+	# Check if the architecture is supported
+	if [ "$arch" != "%SPK_ARCH%" ]; then
+		echo "Your architecture is not supported by this package, sorry."
+		echo "Architecture  : $arch"
+		echo "Synology info : $synoinfo"
+		exit 1
+		;;
+	fi
+	exit 0
+}
+
+postinst ()
+{
+	# Correct the files ownership
+	chown -R root:root ${SYNOPKG_PKGDEST}
+
+	# Create the view directory
+	mkdir -p /usr/local/umurmur
+	mkdir -p /usr/local/bin
+
+	# Create symlinks to the installation ditectory
+	ln -s ${SYNOPKG_PKGDEST}/bin /usr/local/umurmur/bin
+	ln -s ${SYNOPKG_PKGDEST}/lib /usr/local/umurmur/lib
+	ln -s ${SYNOPKG_PKGDEST}/share /usr/local/umurmur/share
+	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/umurmur/var
+	ln -s ${SYNOPKG_PKGDEST}/etc /usr/local/umurmur/etc
+
+	# Create symlinks
+	for bin in ${SYNOPKG_PKGDEST}/bin/umurmur*
+	do
+		ln -s $bin /usr/local/bin/`basename $bin`
+	done
+
+	# Link "share" folder for umurmur to find shared files
+	ln -s ${SYNOPKG_PKGDEST}/share/umurmur /usr/local/share/umurmur
+
+	# Correct the files permission
+	chmod 555 /usr/local/umurmur/bin/*
+	chmod 555 /usr/local/umurmur/lib/*
+
+	exit 0
+}
+
+preuninst ()
+{
+	exit 0
+}
+
+postuninst ()
+{
+	# Remove symlinks
+	for bin in ${SYNOPKG_PKGDEST}/bin/umurmur*
+	do
+		rm -f /usr/local/bin/`basename $bin`
+	done
+
+	# Remove symlinks from /usr/local/umurmur
+	rm -f /usr/local/umurmur/bin
+	rm -f /usr/local/umurmur/lib
+	rm -f /usr/local/umurmur/share
+	rm -f /usr/local/umurmur/var
+	rm -f /usr/local/umurmur/etc
+
+	# Remove "share" folder for umurmur to find shared files
+	rm -f /usr/local/share/umurmur
+
+	# Remove the view directory
+	rmdir /usr/local/umurmur
+
+	exit 0
+}
+
+preupgrade ()
+{
+	exit 0
+}
+
+postupgrade ()
+{
+	exit 0
+}

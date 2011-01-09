@@ -1,0 +1,141 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+UMDIR=/usr/local/umurmur
+UMVAR=$UMDIR/var
+UMLIB=$UMDIR/lib
+UMETC=$UMDIR/etc
+UMEXE=$UMDIR/bin/umurmurd
+SYNO3APP=/usr/syno/synoman/webman/3rdparty
+
+# Files
+UMCNF=$UMETC/umurmur.conf
+UMPID=$UMVAR/umurmur.pid
+UMLOG=$UMVAR/umurmur.log
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting uMurmur..." >> $UMLOG
+
+	# Start uMurmur
+	su root -s /bin/sh -c "LD_LIBRARY_PATH=$UMLIB $UMEXE -r -c $UMCNF -p $UMPID >> $UMLOG 2>&1"
+
+	# Install the application in the main interface.
+	if [ -d $SYNO3APP ]
+	then
+		rm -f $SYNO3APP/umurmur
+		ln -s $UMDIR/share/3rdparty $SYNO3APP/umurmur
+	fi
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping uMurmur..." >> $UMLOG
+
+	# Kill daemon
+	if [ -f $UMPID ]; then
+		kill `cat $UMPID`
+		echo " Done"
+	else
+		echo " Error : Can't find PID file !"
+	fi
+	sleep 1
+
+	# Wait until uMurmur is really dead (may take some time).
+	if [ $# -eq 0 ]; then
+		counter=20
+		while [ $counter -gt 0 ] 
+		do
+			daemon_status || break
+			let counter=counter-1
+			sleep 1
+		done
+	fi
+
+	# Remove the application from the main interface if it was previously added.
+	if [ -h $SYNO3APP/umurmur ]
+	then
+		rm $SYNO3APP/umurmur
+	fi
+}
+
+reload_daemon ()
+{
+	if [ -f $UMPID ]; then
+		kill -s HUP `cat $UMPID`
+		echo " Done"
+	else
+		echo " Error : Can't find PID file !"
+	fi
+	sleep 1
+}
+
+daemon_status ()
+{
+	[ "`ps aux | grep umurmurd | grep -v grep`" != "" ]
+}
+
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "uMurmur daemon already running !"
+			exit 0
+		else
+			echo "Starting uMurmur daemon..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping uMurmur daemon..."
+		stop_daemon
+		exit 0
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	reload)
+		if daemon_status; then
+			reload_daemon
+		fi
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo $UMLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

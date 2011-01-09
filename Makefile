@@ -148,6 +148,7 @@ help:
 
 # Dependency declarations.
 $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install
+$(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install
 
 # Unpack the toolchain and remove conflicting flex.
 precomp/$(ARCH):
@@ -239,6 +240,35 @@ $(OUT_DIR)/curl/syno.config: $(OUT_DIR)/curl.unpack precomp/$(ARCH)
 			--with-random=/dev/urandom \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $(OUT_DIR)/curl/syno.config
+
+$(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/umurmur.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	@sed -i "20c\SSL_LIB:=$(TEMPROOT)$(INSTALL_PREFIX)/lib/libpolarssl.a" $(OUT_DIR)/umurmur/Makefile
+	@sed -i "21c\EXTRA_CFLAGS:=-DUSE_POLARSSL $(CFLAGS)" $(OUT_DIR)/umurmur/Makefile
+	@sed -i "22c\EXTRA_LDFLAGS:=-lpolarssl $(LDFLAGS)" $(OUT_DIR)/umurmur/Makefile
+	@sed -i "1i\CC:=$(TARGET)-gcc" $(OUT_DIR)/umurmur/Makefile
+	@sed -i "/all: umurmurd/a\\\ninstall:\n\tcp umurmurd \$$(INSTALL_PREFIX)$(INSTALL_PREFIX)/bin/" $(OUT_DIR)/umurmur/Makefile
+	@sed -i "1i\CFLAGS:=$(CFLAGS)" $(OUT_DIR)/umurmur/google/protobuf-c/Makefile
+	@sed -i "1i\LDFLAGS:=$(LDFLAGS)" $(OUT_DIR)/umurmur/google/protobuf-c/Makefile
+	@sed -i "1i\CC:=$(TARGET)-gcc" $(OUT_DIR)/umurmur/google/protobuf-c/Makefile
+	@sed -i "1i\AR:=$(TARGET)-ar" $(OUT_DIR)/umurmur/google/protobuf-c/Makefile
+	touch $(OUT_DIR)/umurmur/syno.config
+
+$(OUT_DIR)/polarssl/syno.config: $(OUT_DIR)/polarssl.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	@sed -i "2i\CC=$(TARGET)-gcc" $(OUT_DIR)/polarssl/Makefile
+	@sed -i "2i\CINSTALL_PREFIX=$(INSTALL_PREFIX)" $(OUT_DIR)/polarssl/Makefile
+	@sed -ri 's/\$$\(DESTDIR\)/$$(DESTDIR)$$(CINSTALL_PREFIX)/g' $(OUT_DIR)/polarssl/Makefile
+	@sed -i "/cd programs/d" $(OUT_DIR)/polarssl/Makefile
+	@sed -i "/cd tests/d" $(OUT_DIR)/polarssl/Makefile
+	@sed -i "/\.SILENT:/d" $(OUT_DIR)/polarssl/Makefile
+	@sed -i "/\.SILENT:/d" $(OUT_DIR)/polarssl/library/Makefile
+	@sed -i "s/ -Wdeclaration-after-statement//g" $(OUT_DIR)/polarssl/library/Makefile
+	@sed -i "4i\CC=$(TARGET)-gcc" $(OUT_DIR)/polarssl/library/Makefile
+	@sed -i "/^CFLAGS/a \CFLAGS+=$(CFLAGS)" $(OUT_DIR)/polarssl/library/Makefile
+	@sed -i "s/^\tar /\t$(TARGET)-ar /" $(OUT_DIR)/polarssl/library/Makefile
+	@sed -i "s/^\tranlib /\t$(TARGET)-ranlib /" $(OUT_DIR)/polarssl/library/Makefile
+	touch $(OUT_DIR)/polarssl/syno.config
 
 unpack: precomp/$(ARCH) $(PKG_DESTS)
 

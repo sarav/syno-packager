@@ -1,0 +1,5 @@
+SPK_DESC="Minimalistic Murmur (Mumble server)"
+SPK_MAINT="diaoulael@gmail.com"
+SPK_RELOADUI="yes"
+SPK_URL=""
+META_VERSION=0.2

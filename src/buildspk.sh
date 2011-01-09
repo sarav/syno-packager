@@ -36,7 +36,7 @@ SPK_DESC=${SPK_DESC:-"No description"}
 SPK_MAINT=${SPK_MAINT:-"Unknown"}
 SPK_RELOADUI=${SPK_RELOADUI:-"yes"}
 SPK_VERSION=${SPK_VERSION:-"unknown"}
-SPK_URL=${SPK_URL:-""}
+SPK_URL=${SPK_URL-""}
 SPK_ARCH=${SPK_ARCH:-"noarch"}
 
 # Test the out directory
@@ -50,7 +50,7 @@ OUT_DIR=$PWD/out
 OUT_DIR_ARCH=$OUT_DIR/$SPK_ARCH
 SPK_DIR=$OUT_DIR_ARCH/spk
 INFO_FILE=$SPK_DIR/INFO
-INSTALL_PREFIX=${INSTALL_PREFIX:-"/usr/local"}
+INSTALL_PREFIX=${INSTALL_PREFIX-"/usr/local"}
 SPK_TEST_ARCH=`grep ^$SPK_ARCH arch-target.map | cut -d: -f5`
 
 mkdir -p $SPK_DIR

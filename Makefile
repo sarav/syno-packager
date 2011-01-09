@@ -1,6 +1,6 @@
 # Copyright 2010 Saravana Kannan & Antoine Bertin
 # <sarav dot devel [ignore this] at gmail period com>
-# <diaoulael dot devel [ignore this] at users.sourceforge period net>
+# <diaoulael [ignore this] at users.sourceforge period net>
 #
 # This file is part of syno-packager.
 #

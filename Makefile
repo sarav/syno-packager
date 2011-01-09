@@ -86,11 +86,12 @@ all: out check-arch $(INSTALL_PKG)
 buildall: $(ARCHS_EASY)
 
 $(ARCHS): out
-	@echo Making SPK for arch $@...
-	@mkdir -p out/logs
-	@nice $(MAKE) ARCH=$@ &> out/logs/$@.log
-	@nice $(MAKE) ARCH=$@ spk >> out/logs/$@.log 2>&1
-	@echo Done $@.
+	@echo "Making $(INSTALL_PKG)'s SPK for arch $@ in background..." && \
+	mkdir -p out/logs && \
+	nice $(MAKE) ARCH=$@ > out/logs/$@.log 2>&1 && \
+	nice $(MAKE) ARCH=$@ spk >> out/logs/$@.log 2>&1 && \
+	echo "$(INSTALL_PKG)'s SPK for arch $@ built successfully." || \
+	echo "Error while building $(INSTALL_PKG)'s SPK for arch $@, check logs for more details" &
 
 $(MODELS):
 	$(MAKE) $(shell grep $@[,.] arch-target.map | cut -d: -f1)

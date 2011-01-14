@@ -166,6 +166,8 @@ help:
 # Dependency declarations.
 $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install
 $(OUT_DIR)/umurmur/syno.config: $(OUT_DIR)/libconfig/syno.install $(OUT_DIR)/polarssl/syno.install
+$(OUT_DIR)/curl/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install
+$(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/zlib/syno.install
 
 # Unpack the toolchain and remove conflicting flex.
 precomp/$(ARCH):

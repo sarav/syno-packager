@@ -83,15 +83,16 @@ all: out check-arch $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
 	@echo
 
-buildall: $(ARCHS_EASY)
+buildall: cleanstatus $(ARCHS_EASY)
+	@echo "Building all in background, use 'tail -f out/logs/status.log' to monitor building status in realtime"
 
 $(ARCHS): out
-	@echo "Making $(INSTALL_PKG)'s SPK for arch $@ in background..." && \
+	@echo "Making $(INSTALL_PKG)'s SPK for arch $@..." && \
 	mkdir -p out/logs && \
 	nice $(MAKE) ARCH=$@ > out/logs/$@.log 2>&1 && \
 	nice $(MAKE) ARCH=$@ spk >> out/logs/$@.log 2>&1 && \
-	echo "$(INSTALL_PKG)'s SPK for arch $@ built successfully." || \
-	echo "Error while building $(INSTALL_PKG)'s SPK for arch $@, check logs for more details" &
+	echo "$(INSTALL_PKG)'s SPK for arch $@ built successfully" >> out/logs/status.log || \
+	echo "Error while building $(INSTALL_PKG)'s SPK for arch $@, check logs for more details" >> out/logs/status.log &
 
 $(MODELS):
 	$(MAKE) $(shell grep $@[,.] arch-target.map | cut -d: -f1)
@@ -293,6 +294,9 @@ unpack: precomp/$(ARCH) $(PKG_DESTS)
 
 clean:
 	rm -rf $(OUT_DIR)
+
+cleanstatus:
+	rm -f out/logs/status.log
 
 cleanall:
 	rm -rf out

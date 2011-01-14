@@ -107,33 +107,34 @@ out:
 	@mkdir -p out
 
 check-arch:
-	@echo -n "Checking whether architecture $(ARCH) is supported... "
+	@echo -n "Checking whether architecture $(ARCH) is supported..."
 	@grep ^$(ARCH): arch-target.map > /dev/null
-	@echo Yes.
-	@echo Target: $(TARGET)
+	@echo " yes"
+	@echo "Target: $(TARGET)"
 
 archs:
-	@echo List of supported architectures:
+	@echo "List of supported architectures and models:"
 	@grep ^[^#] arch-target.map | cut -d: -f1,3 --output-delimiter="		"
 
+models: archs
+
 pkgs:
-	@echo List of packages:
-	@echo $(PKGS_NOVER)
+	@echo "List of packages:"
+	@echo "$(PKGS_NOVER)"
 
 tests:
-	@echo
-	@echo SUPPORT_TGTS : $(SUPPORT_TGTS)
-	@echo INSTALL_TGTS : $(INSTALL_TGTS)
-	@echo PKGS_NOVER : $(PKGS_NOVER)
-	@echo STD_PKGS : $(STD_PKGS)
-	@echo INSTALL_PREFIX : $(INSTALL_PREFIX)
-	@echo CC_PATH_PREFIX : $(CC_PATH_PREFIX)
-	@echo CC_PATH : $(CC_PATH)
-	@echo LDFLAGS : $(LDFLAGS)
-	@echo CFLAGS : $(CFLAGS)
-	@echo PKG_CONFIG_PATH : $(PKG_CONFIG_PATH)
-	@echo PATH : $(PATH)
-	@echo
+	@echo "Current variables and their values:"
+	@echo "SUPPORT_TGTS : $(SUPPORT_TGTS)"
+	@echo "INSTALL_TGTS : $(INSTALL_TGTS)"
+	@echo "PKGS_NOVER : $(PKGS_NOVER)"
+	@echo "STD_PKGS : $(STD_PKGS)"
+	@echo "INSTALL_PREFIX : $(INSTALL_PREFIX)"
+	@echo "CC_PATH_PREFIX : $(CC_PATH_PREFIX)"
+	@echo "CC_PATH : $(CC_PATH)"
+	@echo "LDFLAGS : $(LDFLAGS)"
+	@echo "CFLAGS : $(CFLAGS)"
+	@echo "PKG_CONFIG_PATH : $(PKG_CONFIG_PATH)"
+	@echo "PATH : $(PATH)"
 
 help:
 	@echo ""

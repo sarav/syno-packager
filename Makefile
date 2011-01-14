@@ -261,6 +261,7 @@ $(OUT_DIR)/curl/syno.config: $(OUT_DIR)/curl.unpack precomp/$(ARCH)
 			--build=i686-pc-linux \
 			--prefix=$(INSTALL_PREFIX) \
 			--with-random=/dev/urandom \
+			--with-ssl --with-zlib \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $(OUT_DIR)/curl/syno.config
 

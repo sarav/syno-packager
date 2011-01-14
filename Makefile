@@ -135,16 +135,33 @@ tests:
 	@echo
 
 help:
-	@echo
-	@echo Help text for architecture $(ARCH):
-	@echo make - Compile INSTALL_PKG and place it under out/$(ARCH)/root/
-	@echo make ARCH=\<arch\> - Compile INSTALL_PKG for \<arch\> and place it under out/\<arch\>/root/
-	@echo make \<packagename\> - Compile package and place it under out/$(ARCH)/temproot
-	@echo "			or out/$(ARCH)/root if it's an INSTALL_PKG or INSTALL_DEPS"
-	@echo make spk - Create an spk for INSTALL_PKG with the files under out/$(ARCH)/root.
-	@echo make clean - Delete all generated files for $(ARCH).
-	@echo make realclean - Delete all generated files and uncompressed toolchain.
-	@echo
+	@echo ""
+	@echo "usage: make [ARCH=] COMMAND"
+	@echo ""
+	@echo "The most common COMMANDs are:"
+	@echo "  all		Make everything but SPK for ARCH, default command"
+	@echo "  buildall	Make everything for all supported archs in background"
+	@echo "  hash		Generate MD5 and SHA1 checksums of created SPKs"
+	@echo "  out		Create out directory (no need to run this alone)"
+	@echo "  check-arch	Check if ARCH is supported"
+	@echo "  archs		List all supported archs and models"
+	@echo "  models	Same as archs"
+	@echo "  pkgs		List all packages"
+	@echo "  tests		List current variables and their values"
+	@echo "  spk		Make SPK for ARCH"
+	@echo "  help		Display this help"
+	@echo "  clean		Remove out directory for ARCH"
+	@echo "  cleanstatus	Remove status.log (no need to run this alone)"
+	@echo "  cleanall	Remove out directory"
+	@echo "  realclean	Remove out directory and unpack directory for precomp"
+	@echo ""
+	@echo "You can also run:"
+	@echo "  <arch>	Make everything for specified <arch> in background"
+	@echo "  <model>	Make everything for specified <model> in background"
+	@echo "  <pkg>		Make a single <pkg> (unpack it if needed)"
+	@echo "  <pkg>.clean	Clean a single <pkg>"
+	@echo "  <pkg>.unpack	Unpack a single <pkg>"
+	@echo ""
 
 # Dependency declarations.
 $(OUT_DIR)/transmission/syno.config: $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/curl/syno.install $(OUT_DIR)/libevent/syno.install

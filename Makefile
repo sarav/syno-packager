@@ -50,7 +50,7 @@ INSTALL_PKG=transmission
 # compile, but it doesn't need their libraries to be present in the target
 # since transmission is statically compiled.
 INSTALL_DEPS=libevent zlib
-INSTALL_PREFIX=/
+INSTALL_PREFIX=
 
 # Generate intermediate variables for use in rules.
 PKG_TARS=$(wildcard ext/libs/* ext/exec/*)
@@ -240,7 +240,9 @@ $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/openssl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(OUT_DIR)/openssl && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
-	./Configure gcc --prefix=$(INSTALL_PREFIX) --cross-compile-prefix=$(TARGET)-
+	./Configure gcc --prefix=$(shell if [ "$(INSTALL_PREFIX)" = "" ]; then echo "/"; else echo "$(INSTALL_PREFIX)"; fi) \
+			zlib-dynamic --with-zlib-include=$(TEMPROOT)$(INSTALL_PREFIX)/include --with-zlib-lib=$(TEMPROOT)$(INSTALL_PREFIX)/lib \
+			--cross-compile-prefix=$(TARGET)-
 	touch $(OUT_DIR)/openssl/syno.config
 
 $(OUT_DIR)/zlib/syno.config: $(OUT_DIR)/zlib.unpack precomp/$(ARCH)

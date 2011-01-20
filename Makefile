@@ -241,8 +241,8 @@ $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/openssl.unpack precomp/$(ARCH)
 	cd $(OUT_DIR)/openssl && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./Configure gcc --prefix=$(shell if [ "$(INSTALL_PREFIX)" = "" ]; then echo "/"; else echo "$(INSTALL_PREFIX)"; fi) \
-			zlib-dynamic --with-zlib-include=$(TEMPROOT)$(INSTALL_PREFIX)/include --with-zlib-lib=$(TEMPROOT)$(INSTALL_PREFIX)/lib \
-			--cross-compile-prefix=$(TARGET)-
+			zlib-dynamic --with-zlib-include=$(ROOT)$(INSTALL_PREFIX)/include --with-zlib-lib=$(ROOT)$(INSTALL_PREFIX)/lib \
+			no-shared --cross-compile-prefix=$(TARGET)-
 	touch $(OUT_DIR)/openssl/syno.config
 
 $(OUT_DIR)/zlib/syno.config: $(OUT_DIR)/zlib.unpack precomp/$(ARCH)

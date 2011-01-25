@@ -271,9 +271,9 @@ $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl.
 	@echo $@ ----\> $^
 	cd $(OUT_DIR)/openssl && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
-	./Configure gcc --prefix=$(shell if [ "$(INSTALL_PREFIX)" = "" ]; then echo "/"; else echo "$(INSTALL_PREFIX)"; fi) \
-			zlib-dynamic --with-zlib-include=$(TEMPROOT)$(INSTALL_PREFIX)/include --with-zlib-lib=$(TEMPROOT)$(INSTALL_PREFIX)/lib \
-			no-shared --cross-compile-prefix=$(TARGET)-
+	./Configure --prefix=$(shell if [ "$(INSTALL_PREFIX)" = "" ]; then echo "/"; else echo "$(INSTALL_PREFIX)"; fi) \
+			zlib-dynamic --with-zlib-include=$(ROOT)$(INSTALL_PREFIX)/include --with-zlib-lib=$(ROOT)$(INSTALL_PREFIX)/lib \
+			shared --cross-compile-prefix=$(TARGET)- "syno:gcc:-O3::(unknown)::-ldl:BN_LLONG:::::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
 	touch $(OUT_DIR)/openssl/syno.config
 
 $(OUT_DIR)/zlib/syno.config: $(OUT_DIR)/zlib.unpack precomp/$(ARCH)

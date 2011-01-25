@@ -27,10 +27,10 @@
 #
 # Packaging rules
 ARCH=88f5281
-INSTALL_PKG=Python
-NONSTD_PKGS_CONFIGURE=Python zlib ncurses readline bzip2 openssl libffi tcl
-NONSTD_PKGS_INSTALL=Python bzip2 tcl
-INSTALL_DEPS=
+INSTALL_PKG=SABnzbd
+NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl Cheetah Markdown psmisc sysvinit
+NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl Cheetah Markdown psmisc sysvinit openssl
+INSTALL_DEPS=zlib openssl sqlite
 
 # Prefix (optional, can be blank)
 INSTALL_PREFIX=
@@ -275,6 +275,9 @@ $(OUT_DIR)/openssl/syno.config: $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/openssl.
 			zlib-dynamic --with-zlib-include=$(ROOT)$(INSTALL_PREFIX)/include --with-zlib-lib=$(ROOT)$(INSTALL_PREFIX)/lib \
 			shared --cross-compile-prefix=$(TARGET)- "syno:gcc:-O3::(unknown)::-ldl:BN_LLONG:::::::::::::::dlfcn:linux-shared:-fPIC::.so.\\\$$\(SHLIB_MAJOR\).\\\$$\(SHLIB_MINOR\):"
 	touch $(OUT_DIR)/openssl/syno.config
+	#"linux-armv4:gcc:-DTERMIO -O3 -Wall::-D_REENTRANT::-ldl:BN_LLONG RC4_CHAR RC4_CHUNK DES_INT DES_UNROLL BF_PTR:${armv4_asm}:dlfcn:linux-shared:-fPIC::.so.\$$(SHLIB_MAJOR).\$$(SHLIB_MINOR)"
+	#$cc : $cflags : $unistd : $thread_cflag : $sys_id : $lflags : $bn_ops : $cpuid_obj : $bn_obj : $des_obj : $aes_obj : $bf_obj : $md5_obj : $sha1_obj : $cast_obj : $rc4_obj : $rmd160_obj : $rc5_obj : $wp_obj : $cmll_obj : $dso_scheme : $shared_target : $shared_cflag : $shared_ldflag : $shared_extension : $ranlib : $arflags : $multilib
+	#gcc:-O3::(unknown):::BN_LLONG:::
 
 $(OUT_DIR)/zlib/syno.config: $(OUT_DIR)/zlib.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
@@ -325,7 +328,7 @@ $(OUT_DIR)/polarssl/syno.config: $(OUT_DIR)/polarssl.unpack precomp/$(ARCH)
 	@sed -i "s/^\tranlib /\t$(TARGET)-ranlib /" $(OUT_DIR)/polarssl/library/Makefile
 	touch $(OUT_DIR)/polarssl/syno.config
 
-$(OUT_DIR)/Python/syno.config: $(OUT_DIR)/Python.unpack precomp/$(ARCH)
+$(OUT_DIR)/Python/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline/syno.install $(OUT_DIR)/zlib/syno.install $(OUT_DIR)/bzip2/syno.install $(OUT_DIR)/tcl/syno.install $(OUT_DIR)/sqlite/syno.install $(OUT_DIR)/openssl/syno.install $(OUT_DIR)/Python.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
@@ -350,11 +353,11 @@ $(OUT_DIR)/ncurses/syno.config: $(OUT_DIR)/ncurses.unpack precomp/$(ARCH)
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
-			--prefix=$(INSTALL_PREFIX) \
-			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)""
+			--prefix=$(INSTALL_PREFIX) --enable-overwrite \
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
-$(OUT_DIR)/readline/syno.config: $(OUT_DIR)/readline.unpack precomp/$(ARCH)
+$(OUT_DIR)/readline/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readline.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
@@ -378,6 +381,18 @@ $(OUT_DIR)/bzip2/syno.config: $(OUT_DIR)/bzip2.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	touch $@
 
+$(OUT_DIR)/Cheetah/syno.config: $(OUT_DIR)/Cheetah.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	touch $@
+
+$(OUT_DIR)/Markdown/syno.config: $(OUT_DIR)/Markdown.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	touch $@
+
+$(OUT_DIR)/SABnzbd/syno.config: $(OUT_DIR)/Cheetah/syno.install $(OUT_DIR)/SABnzbd.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	touch $@
+
 $(OUT_DIR)/tcl/syno.config: $(OUT_DIR)/tcl.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	cd $(dir $@)unix && \
@@ -391,12 +406,35 @@ $(OUT_DIR)/tcl/syno.config: $(OUT_DIR)/tcl.unpack precomp/$(ARCH)
 	@sed -i "s|\./\$${TCL_EXE}|\$$\{TCL_EXE\}|" $(OUT_DIR)/tcl/unix/Makefile
 	touch $@
 
+$(OUT_DIR)/psmisc/syno.config: $(OUT_DIR)/psmisc.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	cd $(dir $@) && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	ac_cv_func_malloc_0_nonnull=yes \
+	ac_cv_func_realloc_0_nonnull=yes \
+	./configure --host=$(TARGET) --target=$(TARGET) \
+			--build=i686-pc-linux \
+			--prefix=$(INSTALL_PREFIX) \
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+	touch $@
+
+$(OUT_DIR)/sysvinit/syno.config: $(OUT_DIR)/sysvinit.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	touch $@
+
 
 ##############################
 # User defined, non-standard #
 # install rules              #
 ##############################
 #
+$(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/Cheetah/syno.install $(OUT_DIR)/SABnzbd/syno.config
+	@echo $@ ----\> $^
+	mkdir -p $(ROOT)/SABnzbd
+	cp -Rf $(OUT_DIR)/SABnzbd/* $(ROOT)/SABnzbd
+	rm -f $(ROOT)/SABnzbd/syno.config
+	touch $@
+
 $(OUT_DIR)/Python/syno.install: $(OUT_DIR)/Python/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@) HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen \
@@ -405,6 +443,16 @@ $(OUT_DIR)/Python/syno.install: $(OUT_DIR)/Python/syno.config
 	make -C $(dir $@) DESTDIR=$(ROOT) INSTALL_PREFIX=$(ROOT) install HOSTPYTHON=./hostpython \
 			HOSTPGEN=./Parser/hostpgen BLDSHARED="$(TARGET)-gcc -shared" \
 			CROSS_COMPILE=$(TARGET)- CROSS_COMPILE_TARGET=yes
+	# Now we drop from ~75M to ~20M
+	rm -f $(ROOT)/bin/python2.6
+	$(TARGET)-strip $(ROOT)/bin/python
+	rm -rf $(ROOT)/include
+	rm -rf $(ROOT)/share
+	rm -f $(ROOT)/lib/*.a
+	rm -rf $(ROOT)/lib/python2.6/test
+	rm -rf $(ROOT)/lib/python2.6/config
+	rm -f `find $(ROOT)/lib/python2.6/ -name "*.pyo"`
+	rm -f `find $(ROOT)/lib/python2.6/ -name "*.py"`
 	touch $@
 
 $(OUT_DIR)/bzip2/syno.install: $(OUT_DIR)/bzip2/syno.config
@@ -413,10 +461,41 @@ $(OUT_DIR)/bzip2/syno.install: $(OUT_DIR)/bzip2/syno.config
 	make -C $(dir $@) install PREFIX="$(TEMPROOT)"
 	touch $@
 
+$(OUT_DIR)/sysvinit/syno.install: $(OUT_DIR)/sysvinit/syno.config
+	@echo $@ ----\> $^
+	make -C $(dir $@) SBIN="killall5" CC="$(TARGET)-gcc" LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)"
+	cp $(dir $@)src/killall5 $(ROOT)/bin/
+	touch $@
+
 $(OUT_DIR)/tcl/syno.install: $(OUT_DIR)/tcl/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@)unix
 	make -C $(dir $@)unix DESTDIR=$(TEMPROOT) INSTALL_PREFIX=$(TEMPROOT) install
+	touch $@
+
+$(OUT_DIR)/psmisc/syno.install: $(OUT_DIR)/psmisc/syno.config
+	@echo $@ ----\> $^
+	make -C $(dir $@) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
+	make -C $(dir $@) DESTDIR=$(ROOT) INSTALL_PREFIX=$(ROOT) install
+	touch $@
+
+$(OUT_DIR)/Markdown/syno.install: $(OUT_DIR)/Python/syno.install $(OUT_DIR)/Markdown/syno.config
+	@echo $@ ----\> $^
+	cd $(OUT_DIR)/Markdown/ && \
+	python setup.py install --prefix $(ROOT)
+	touch $@
+
+$(OUT_DIR)/Cheetah/syno.install: $(OUT_DIR)/Python/syno.install $(OUT_DIR)/Markdown/syno.install $(OUT_DIR)/Cheetah/syno.config
+	@echo $@ ----\> $^
+	cd $(OUT_DIR)/Cheetah/ && \
+	python setup.py install --prefix $(ROOT)
+	touch $@
+
+$(OUT_DIR)/openssl/syno.install: $(OUT_DIR)/openssl/syno.config
+	@echo $@ ----\> $^
+	make -C $(dir $@)
+	make -C $(dir $@) build-shared
+	make -C $(dir $@) DESTDIR=$(ROOT) INSTALL_PREFIX=$(ROOT) install
 	touch $@
 
 

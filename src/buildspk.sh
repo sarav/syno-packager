@@ -37,6 +37,7 @@ SPK_MAINT=${SPK_MAINT:-"Unknown"}
 SPK_RELOADUI=${SPK_RELOADUI:-"yes"}
 SPK_VERSION=${SPK_VERSION:-"unknown"}
 SPK_URL=${SPK_URL-""}
+SPK_PORT=${SPK_PORT-""}
 SPK_ARCH=${SPK_ARCH:-"noarch"}
 
 # Test the out directory
@@ -61,6 +62,7 @@ echo description=\"$SPK_DESC\" >> $INFO_FILE
 echo maintainer=\"$SPK_MAINT\" >> $INFO_FILE
 echo arch=\"noarch\" >> $INFO_FILE
 echo adminurl=\"$SPK_URL\" >> $INFO_FILE
+echo adminport=\"$SPK_PORT\" >> $INFO_FILE
 echo reloadui=\"$SPK_RELOADUI\" >> $INFO_FILE
 
 # Copy scripts and replace the place holders

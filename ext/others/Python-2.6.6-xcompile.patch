@@ -265,24 +265,6 @@ diff -u Python-2.6.6_orig/setup.py Python-2.6.6/setup.py
          except:
              exc_type, why, tb = sys.exc_info()
              self.announce('*** WARNING: importing extension "%s" '
-@@ -742,7 +748,7 @@
- 
-         if (ssl_incs is not None and
-             ssl_libs is not None and
--            openssl_ver >= 0x00907000):
-+            openssl_ver >= 0x00907000 and False):
-             # The _hashlib module wraps optimized implementations
-             # of hash functions from the OpenSSL library.
-             exts.append( Extension('_hashlib', ['_hashopenssl.c'],
-@@ -762,7 +768,7 @@
-                             depends = ['md5.h']) )
-             missing.append('_hashlib')
- 
--        if (openssl_ver < 0x00908000):
-+        if (True or openssl_ver < 0x00908000):
-             # OpenSSL doesn't do these until 0.9.8 so we'll bring our own hash
-             exts.append( Extension('_sha256', ['sha256module.c']) )
-             exts.append( Extension('_sha512', ['sha512module.c']) )
 @@ -1823,7 +1829,7 @@
                                           ffi_configfile):
                  from distutils.dir_util import mkpath

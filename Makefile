@@ -504,13 +504,7 @@ $(OUT_DIR)/openssl/syno.install: $(OUT_DIR)/openssl/syno.config
 ###################
 #
 SPK_NAME=$(INSTALL_PKG)
-SPK_VERSION=$(notdir $(wildcard ext/*/$(INSTALL_PKG)*))
-SPK_VERSION:=$(SPK_VERSION:.tgz=)
-SPK_VERSION:=$(SPK_VERSION:.tar.gz=)
-SPK_VERSION:=$(SPK_VERSION:.tar.bz2=)
-SPK_VERSION:=$(SPK_VERSION:$(INSTALL_PKG)%=%)
-# The "-" needs to be removed separately.
-SPK_VERSION:=$(SPK_VERSION:-%=%)
+SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*)) | sed -r -e 's/(\w*)(-autoconf)?-?([0-9][0-9.a-zRC]+)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\3/g')
 SPK_ARCH="$(ARCH)"
 
 spk:

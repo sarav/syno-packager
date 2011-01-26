@@ -1,0 +1,115 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+CPDIR=/usr/local/CouchPotato
+CPVAR=$CPDIR/var
+SABLIB=/usr/local/SABnzbd/lib
+PYEXE=/usr/local/bin/python
+CPEXE=$CPDIR/CouchPotato/CouchPotato.py
+PAREXE=/usr/local/bin/cfg.parser
+
+# Files
+CPCNF=$CPDIR/CouchPotato/config.ini
+CPPID=$CPVAR/CouchPotato.pid
+CPLOG=$CPVAR/CouchPotato.log
+CPINFO=/var/packages/CouchPotato/INFO
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting CouchPotato..." >> $CPLOG
+	
+	# Retrieve port
+	if [ -r $CPCNF ]; then
+		CPPORT=`$PAREXE global port $CPCNF`
+	fi
+
+	# Update port in INFO file
+	sed -i "s/^adminport.*$/adminport=\"$CPPORT\"/g" $CPINFO
+
+	# Start CouchPotato
+	su root -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $CPEXE -p $CPPID -d >> $CPLOG 2>&1"
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping CouchPotato..." >> $CPLOG
+
+	# Kill daemon
+	if [ -f $CPPID ]; then
+		kill `cat $CPPID`
+	fi
+	sleep 1
+
+	# Wait until CouchPotato is really dead (may take some time)
+	counter=20
+	while [ $counter -gt 0 ] 
+	do
+		daemon_status || break
+		let counter=counter-1
+		sleep 1
+	done
+}
+
+daemon_status ()
+{
+	[ "`ps | grep /usr/local/CouchPotato | grep -v grep`" != "" ]
+}
+
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "CouchPotato daemon already running !"
+			exit 0
+		else
+			echo "Starting CouchPotato daemon..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping CouchPotato daemon..."
+		stop_daemon
+		exit 0
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo $SBLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

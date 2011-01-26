@@ -1,0 +1,129 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+SABDIR=/usr/local/SABnzbd
+SABVAR=$SABDIR/var
+SABLIB=$SABDIR/lib
+SABETC=$SABDIR/etc
+PYEXE=/usr/local/bin/python
+SABEXE=$SABDIR/SABnzbd/SABnzbd.py
+PAREXE=$SABDIR/bin/cfg.parser
+
+# Files
+SABCNF=$SABETC/sab.ini
+SABLOG=$SABVAR/sab.log
+SABINFO=/var/packages/SABnzbd/INFO
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting SABnzbd..." >> $SABLOG
+	
+	# Retrieve port
+	if [ -r $SABCURCNF ]; then
+		SABPORT=`$PAREXE misc port $SABCNF`
+	fi
+
+	# Update port in INFO file
+	sed -i "s/^adminport.*$/adminport=\"$SABPORT\"/g" $SABINFO
+
+	# Start SABnzbd
+	su root -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $SABEXE -f $SABCNF -d >> $SABLOG 2>&1"
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping SABnzbd..." >> $SABLOG
+	
+	# Retrive values from previous configuration file as it may have changed
+	SABPORT=`$PAREXE misc port $SABCNF`
+	SABHOST=`$PAREXE misc host $SABCNF`
+	SABUSR=`$PAREXE misc username $SABCNF`
+	SABPWD=`$PAREXE misc password $SABCNF`
+	SABAPIKEY=`$PAREXE misc api_key $SABCNF`
+
+	# Correct invalid values
+	if [ "$SABHOST" = "0.0.0.0" ]; then
+		SABHOST="localhost"
+	fi
+
+	# Kill daemon
+	if [ "$SABUSR" = "" -a "$SABPWD" = "" ]; then
+		su root -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&apikey=$SABAPIKEY'"
+	else
+		su root -s /bin/sh -c "wget -q --delete-after 'http://$SABHOST:$SABPORT/sabnzbd/api?mode=shutdown&ma_username=$SABUSR&ma_password=$SABPWD&apikey=$SABAPIKEY'"
+	fi
+	sleep 1
+
+	# Wait until SABnzbd is really dead (may take some time)
+	counter=20
+	while [ $counter -gt 0 ] 
+	do
+		daemon_status || break
+		let counter=counter-1
+		sleep 1
+	done
+}
+
+daemon_status ()
+{
+	[ "`ps | grep /usr/local/SABnzbd | grep -v grep`" != "" ]
+}
+
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "SABnzbd daemon already running !"
+			exit 0
+		else
+			echo "Starting SABnzbd daemon..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping SABnzbd daemon..."
+		stop_daemon
+		exit 0
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo $SABLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

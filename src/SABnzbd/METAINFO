@@ -1,0 +1,6 @@
+SPK_DESC="Open Source Binary Newsreader written in Python."
+SPK_MAINT="diaoulael@users.sourceforge.net"
+SPK_RELOADUI="yes"
+SPK_URL=""
+SPK_PORT=9200
+META_VERSION="0.1"

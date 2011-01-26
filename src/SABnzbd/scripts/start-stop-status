@@ -37,7 +37,7 @@ start_daemon ()
 	echo `date`" : Starting SABnzbd..." >> $SABLOG
 	
 	# Retrieve port
-	if [ -r $SABCURCNF ]; then
+	if [ -r $SABCNF ]; then
 		SABPORT=`$PAREXE misc port $SABCNF`
 	fi
 

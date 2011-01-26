@@ -49,7 +49,7 @@ CC_PATH=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(
 # List available packages in ext/libs and ext/exec directories
 AVAILABLE_PKGS=$(strip $(foreach pkg, \
 	$(notdir $(wildcard ext/libs/*.tgz ext/libs/*.tar.gz ext/libs/*.tar.bz2 ext/exec/*.tgz ext/exec/*.tar.gz ext/exec/*.tar.bz2)), \
-	$(shell echo $(pkg) | sed -r -e 's/(\w*)(-autoconf)?-?[0-9][0-9.a-zRC]+(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\1/g')) \
+	$(shell echo $(pkg) | sed -r -e 's/^(\w*(-linux)?(-ng)?)(-autoconf)?-?[0-9][0-9.a-zRC]+(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\1/g')) \
 )
 
 # Sort package names in variables for further use depending of their "standardness"
@@ -510,7 +510,7 @@ $(OUT_DIR)/openssl/syno.install: $(OUT_DIR)/openssl/syno.config
 ###################
 #
 SPK_NAME=$(INSTALL_PKG)
-SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*)) | sed -r -e 's/(\w*)(-autoconf)?-?([0-9][0-9.a-zRC]+)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\3/g')
+SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*)) | sed -r -e 's/^(\w*(-linux)?(-ng)?)(-autoconf)?-?([0-9][0-9.a-zRC]+)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\5/g')
 SPK_ARCH="$(ARCH)"
 
 spk:

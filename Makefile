@@ -71,6 +71,10 @@ CFLAGS=-I$(PWD)/$(CC_PATH)/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(RO
 CPPFLAGS=$(CFLAGS)
 LDFLAGS=-R/usr/local/$(INSTALL_PKG)/lib -L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
 
+# Variables used to check for bugged config.h and syno.h
+SYNO_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)/include/linux/syno.h
+CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)/include/linux/config.h
+
 
 ##################
 # Standard rules #
@@ -197,13 +201,15 @@ realclean: cleanall
 # Specific rules #
 ##################
 #
-# Unpack the toolchain and remove conflicting flex.
+# Unpack the toolchain, remove conflicting flex and correct buggy config.h on some arch.
 precomp/$(ARCH):
 	grep ^$(ARCH) arch-target.map
 	mkdir -p precomp/$(ARCH)
 	tar xf ext/precompiled/$(ARCH).* -C precomp/$(ARCH)
 	rm -f $(CC_PATH)/bin/flex
 	rm -f $(CC_PATH)/bin/flex++
+	@[ -f $(SYNO_H) ] && [ -f $(CONFIG_H) ] && cat $(SYNO_H) | grep -q '[0-9]define[0-9]' && sed -i "s|^#include|//#include|" $(CONFIG_H) \
+	&& echo "config.h has beed corrected" || echo "config.h is not buggy"
 
 # For each package, create a out/<arch>/<pkg>.unpack target that unpacks the
 # source to out/<arch>/<versionned pkg> and creates a symlink called

@@ -1,0 +1,128 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Common
+SBDIR=/usr/local/SickBeard
+SBVAR=$SBDIR/var
+SABLIB=/usr/local/SABnzbd/lib
+PYEXE=/usr/local/bin/python
+SBEXE=$SBDIR/SickBeard/SickBeard.py
+PAREXE=/usr/local/bin/cfg.parser
+
+# Files
+SBCNF=$SBDIR/SickBeard/config.ini
+SBLOG=$SBVAR/SickBeard.log
+SBINFO=/var/packages/SickBeard/INFO
+
+start_daemon ()
+{
+	# Log
+	echo `date`" : Starting SickBeard..." >> $SBLOG
+	
+	# Retrieve port
+	if [ -r $SBCNF ]; then
+		SBPORT=`$PAREXE General web_port $SBCNF`
+	fi
+
+	# Update port in INFO file
+	sed -i "s/^adminport.*$/adminport=\"$SBPORT\"/g" $SBINFO
+
+	# Start SickBeard
+	su root -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $SBEXE --daemon >> $SBLOG 2>&1"
+}
+
+stop_daemon ()
+{
+	# Log
+	echo `date`" : Stoping SickBeard..." >> $SBLOG
+	
+	# Retrive values from previous configuration file as it may have changed
+	SBPORT=`$PAREXE General web_port $SBCNF`
+	SBHOST=`$PAREXE General web_host $SBCNF`
+	SBUSR=`$PAREXE General web_username $SBCNF`
+	SBPWD=`$PAREXE General web_password $SBCNF`
+
+	# Correct invalid values
+	if [ "$SBHOST" = "0.0.0.0" ]; then
+		SBHOST="localhost"
+	fi
+
+	# Kill daemon
+	if [ "$SBUSR" = "" -a "$SBPWD" = "" ]; then
+	
+		su root -s /bin/sh -c "wget -q --delete-after --user=$SBUSR --password=$SBPWD 'http://$SBHOST:$SBPORT/home/shutdown/'"
+	else
+		su root -s /bin/sh -c "wget -q --delete-after 'http://$SBHOST:$SBPORT/home/shutdown/'"
+	fi
+	sleep 1
+
+	# Wait until SickBeard is really dead (may take some time)
+	counter=20
+	while [ $counter -gt 0 ] 
+	do
+		daemon_status || break
+		let counter=counter-1
+		sleep 1
+	done
+}
+
+daemon_status ()
+{
+	[ "`ps | grep /usr/local/SickBeard | grep -v grep`" != "" ]
+}
+
+
+case $1 in
+	start)
+		if daemon_status; then
+			echo "SickBeard daemon already running !"
+			exit 0
+		else
+			echo "Starting SickBeard daemon..."
+			start_daemon
+			exit $?
+		fi
+		;;
+	stop)
+		echo "Stopping SickBeard daemon..."
+		stop_daemon
+		exit 0
+		;;
+	restart)
+		stop_daemon
+		start_daemon
+		exit $?
+		;;
+	status)
+		if daemon_status; then
+			echo "Running"
+			exit 0
+		else
+			echo "Not running"
+			exit 1
+		fi
+		;;
+	log)
+		echo $SBLOG
+		exit 0
+		;;
+	*)
+		exit 1
+		;;
+esac

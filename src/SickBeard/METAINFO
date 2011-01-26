@@ -1,0 +1,6 @@
+SPK_DESC="The ultimate PVR application that downloads and manages your TV shows"
+SPK_MAINT="diaoulael@users.sourceforge.net"
+SPK_RELOADUI="yes"
+SPK_URL=""
+SPK_PORT=9300
+META_VERSION="0.1"

@@ -1,0 +1,75 @@
+#!/bin/sh
+# Copyright 2010 Antoine Bertin
+# <diaoulael [ignore this] at users.sourceforge period net>
+#
+# This file is part of syno-packager.
+#
+# syno-packager is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# syno-packager is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with syno-packager.  If not, see <http://www.gnu.org/licenses/>.
+
+# Find the CPU architecture
+synoinfo=`get_key_value /etc.defaults/synoinfo.conf unique`
+arch=`echo $synoinfo | cut -d_ -f2`
+
+preinst ()
+{
+	# Check if SABnzbd is installed
+	if [ ! -d /usr/local/SABnzbd ]; then
+		echo "SABnzbd SPK is not installed. Install it and try again."
+		exit 1
+	fi
+
+	exit 0
+}
+
+postinst ()
+{
+	# Correct the files ownership
+	chown -R root:root ${SYNOPKG_PKGDEST}
+
+	# Create the view directory
+	mkdir -p /usr/local/SickBeard
+
+	# Create symlinks to the installation ditectory
+	ln -s ${SYNOPKG_PKGDEST}/SickBeard /usr/local/SickBeard/SickBeard
+	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/SickBeard/var
+
+	exit 0
+}
+
+preuninst ()
+{
+	exit 0
+}
+
+postuninst ()
+{
+	# Remove symlinks
+	rm -f /usr/local/SickBeard/SickBeard
+	rm -f /usr/local/SickBeard/var
+
+	# Remove the view directory
+	rmdir /usr/local/SickBeard
+
+	exit 0
+}
+
+preupgrade ()
+{
+	exit 1
+}
+
+postupgrade ()
+{
+	exit 1
+}

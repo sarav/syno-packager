@@ -606,7 +606,7 @@ $(OUT_DIR)/pyOpenSSL/syno.install: $(OUT_DIR)/Python/syno.config $(OUT_DIR)/pyOp
 ###################
 #
 SPK_NAME=$(INSTALL_PKG)
-SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*)) | sed -r -e 's/^(\w*(-linux)?(-ng)?)(-autoconf)?-?([0-9][0-9.a-zRC]+)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\5/g')
+SPK_VERSION=$(shell echo $(notdir $(wildcard ext/*/$(INSTALL_PKG)*)) | sed -r -e 's/^(\w*(-linux)?(-ng)?)(-autoconf)?-?([0-9][0-9.a-zRC]+)(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\5/g' -e 's/^\s*$$/tip/')
 SPK_ARCH="$(ARCH)"
 
 spk:

@@ -52,6 +52,9 @@ AVAILABLE_PKGS=$(strip $(foreach pkg, \
 	$(shell echo $(pkg) | sed -r -e 's/^(\w*(-linux)?(-ng)?)(-autoconf)?-?[0-9][0-9.a-zRC]+(-stable|-gpl|-src)?\.(tgz|tar\.gz|tar\.bz2)$$/\1/g')) \
 )
 
+# Extra rules for very non-standard packages (no binaries, no source code)
+EXTRA_PKGS=$(filter-out $(AVAILABLE_PKGS), $(strip $(INSTALL_PKG) $(INSTALL_DEPS)))
+
 # Sort package names in variables for further use depending of their "standardness"
 STD_PKGS_CONFIGURE=$(filter-out $(NONSTD_PKGS_CONFIGURE), $(AVAILABLE_PKGS))
 STD_PKGS_INSTALL_ROOT=$(filter $(INSTALL_DEPS), $(filter-out $(NONSTD_PKGS_INSTALL), $(AVAILABLE_PKGS)))
@@ -133,6 +136,7 @@ tests:
 	@echo ""
 	@echo "Packages (auto-detected):"
 	@echo "	AVAILABLE_PKGS			$(AVAILABLE_PKGS)"
+	@echo "	EXTRA_PKGS			$(EXTRA_PKGS)"
 	@echo "	STD_PKGS_CONFIGURE		$(STD_PKGS_CONFIGURE)"
 	@echo "	STD_PKGS_INSTALL_ROOT		$(STD_PKGS_INSTALL_ROOT)"
 	@echo "	STD_PKGS_INSTALL_TEMPROOT	$(STD_PKGS_INSTALL_TEMPROOT)"
@@ -265,6 +269,8 @@ $(AVAILABLE_PKGS): %: $(OUT_DIR)/%/syno.install
 # all out/<arch>/<pkg>*
 $(AVAILABLE_PKGS:%=%.clean):
 	rm -rf $(OUT_DIR)/$(patsubst %.clean,%, $@)*
+
+$(EXTRA_PKGS): %: $(OUT_DIR)/%.install
 
 
 ##############################
@@ -461,6 +467,19 @@ $(OUT_DIR)/util-linux-ng/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)
 # install rules              #
 ##############################
 #
+$(OUT_DIR)/CouchPotato.install:
+	@echo $@ ----\> $^
+	mkdir -p $(ROOT)
+	cd $(ROOT) && git clone https://github.com/RuudBurger/CouchPotato.git
+	touch $@
+
+$(OUT_DIR)/SickBeard.install:
+	@echo $@ ----\> $^
+	mkdir -p $(ROOT)
+	cd $(ROOT) && git clone https://github.com/midgetspy/Sick-Beard.git
+	mv $(ROOT)/Sick-Beard $(ROOT)/SickBeard
+	touch $@
+
 $(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/util-linux-ng/syno.install $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/SABnzbd/syno.clean $(OUT_DIR)/SABnzbd/syno.config 
 	@echo $@ ----\> $^
 	mkdir -p $(ROOT)/SABnzbd

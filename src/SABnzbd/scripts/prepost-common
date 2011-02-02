@@ -33,8 +33,11 @@ preinst ()
 
 postinst ()
 {
+	# Create SABnzbd specific user
+	adduser sabnzbduser -s /sbin/nologin -G users -D -H
+
 	# Correct the files ownership
-	chown -R root:root ${SYNOPKG_PKGDEST}
+	chown -R sabnzbduser:root ${SYNOPKG_PKGDEST}
 
 	# Create the view directory
 	mkdir -p /usr/local/SABnzbd
@@ -54,10 +57,10 @@ postinst ()
 	done
 
 	# Correct the files permission
-	chmod 555 /usr/local/SABnzbd/bin/*
-	chmod 555 /usr/local/SABnzbd/lib/*
-	chown root:users /usr/local/SABnzbd/var
-	chmod 775 /usr/local/SABnzbd/var
+	chmod 500 /usr/local/SABnzbd/bin/*
+	chmod 500 /usr/local/SABnzbd/lib/*
+	chmod 700 /usr/local/SABnzbd/var/*
+	chmod 700 /usr/local/SABnzbd/etc/*
 
 	exit 0
 }
@@ -87,6 +90,9 @@ postuninst ()
 
 	# Remove the view directory
 	rmdir /usr/local/SABnzbd
+
+	# Remove the user
+	deluser sabnzbduser
 
 	exit 0
 }

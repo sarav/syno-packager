@@ -35,6 +35,7 @@ INSTALL_DEPS=zlib openssl sqlite par2cmdline
 # Prefix (optional, can be blank)
 INSTALL_PREFIX=
 
+
 ######################################
 # User shouldn't edit anything below #
 # except non-standard rules          #
@@ -361,13 +362,19 @@ $(OUT_DIR)/Python/host.install: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/readl
 $(OUT_DIR)/Python/syno.config: $(OUT_DIR)/Python/host.install
 	@echo $@ ----\> $^
 	patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/Python-2.6.6-xcompile.patch
+ifeq ($(ARCH),88f628x)
+	EXTRA_PYTHON_ARM_CFLAGS=-mfloat-abi=soft
+endif
+ifeq ($(ARCH),88f5281)
+	EXTRA_PYTHON_ARM_CFLAGS=-mfloat-abi=soft
+endif
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(INSTALL_PREFIX) \
 			--with-cxx-main=$(TARGET)-g++ \
-			CFLAGS="-DPATH_MAX=4096 -mfloat-abi=soft $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
+			CFLAGS="-DPATH_MAX=4096 $(EXTRA_PYTHON_ARM_CFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
 	touch $@
 
 $(OUT_DIR)/ncurses/syno.config: $(OUT_DIR)/ncurses.unpack precomp/$(ARCH)
@@ -376,7 +383,7 @@ $(OUT_DIR)/ncurses/syno.config: $(OUT_DIR)/ncurses.unpack precomp/$(ARCH)
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
-			--prefix=$(INSTALL_PREFIX) --enable-overwrite \
+			--prefix=$(INSTALL_PREFIX) --with-shared --enable-rpath --enable-overwrite \
 			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
@@ -397,7 +404,7 @@ $(OUT_DIR)/libffi/syno.config: $(OUT_DIR)/libffi.unpack precomp/$(ARCH)
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(INSTALL_PREFIX) \
-			CFLAGS="-mfloat-abi=soft $(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	touch $@
 
 $(OUT_DIR)/bzip2/syno.config: $(OUT_DIR)/bzip2.unpack precomp/$(ARCH)
@@ -447,6 +454,19 @@ $(OUT_DIR)/psmisc/syno.config: $(OUT_DIR)/psmisc.unpack precomp/$(ARCH)
 
 $(OUT_DIR)/sysvinit/syno.config: $(OUT_DIR)/sysvinit.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
+	touch $@
+
+$(OUT_DIR)/par2cmdline/syno.config: $(OUT_DIR)/par2cmdline.unpack precomp/$(ARCH) gcc-version
+	@echo $@ ----\> $^
+	cd $(dir $@) && \
+	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
+	./configure --host=$(TARGET) --target=$(TARGET) \
+			--build=i686-pc-linux \
+			--prefix=$(INSTALL_PREFIX) \
+			CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+	@echo $(shell if [ $(GCC_MAJOR) -eq 4 ]; then \
+			patch -d $(dir $@) -p 1 -i $(EXT_DIR)/others/par2cmdline-0.4-gcc4.patch; \
+		fi)
 	touch $@
 
 $(OUT_DIR)/util-linux-ng/syno.config: $(OUT_DIR)/ncurses/syno.install $(OUT_DIR)/util-linux-ng.unpack precomp/$(ARCH)
@@ -526,13 +546,19 @@ $(OUT_DIR)/SABnzbd/syno.clean: $(OUT_DIR)/Python/syno.install $(OUT_DIR)/SABnzbd
 $(OUT_DIR)/Python/syno.install: $(OUT_DIR)/Markdown/syno.install $(OUT_DIR)/Cheetah/syno.install $(OUT_DIR)/pyOpenSSL/syno.install $(OUT_DIR)/Python/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@) distclean
+ifeq ($(ARCH),88f628x)
+	EXTRA_PYTHON_ARM_CFLAGS=-mfloat-abi=soft
+endif
+ifeq ($(ARCH),88f5281)
+	EXTRA_PYTHON_ARM_CFLAGS=-mfloat-abi=soft
+endif
 	cd $(dir $@) && \
 	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) \
 	./configure --host=$(TARGET) --target=$(TARGET) \
 			--build=i686-pc-linux \
 			--prefix=$(INSTALL_PREFIX) \
 			--with-cxx-main=$(TARGET)-g++ \
-			CFLAGS="-DPATH_MAX=4096 -mfloat-abi=soft $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
+			CFLAGS="-DPATH_MAX=4096 $(EXTRA_PYTHON_ARM_CFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
 	make -C $(dir $@) HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen \
 			BLDSHARED="$(TARGET)-gcc -shared" CROSS_COMPILE=$(TARGET)- \
 			CROSS_COMPILE_TARGET=yes

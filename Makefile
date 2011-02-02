@@ -128,8 +128,14 @@ pkgs:
 	@echo "List of packages:"
 	@echo "$(AVAILABLE_PKGS)"
 
-tests:
+tests: gcc-version
 	@echo "Current variables and their values:"
+	@echo "Configuration (auto-detected):"
+	@echo "	ARCH				$(ARCH)"
+	@echo "	TARGET				$(TARGET)"
+	@echo "	GCC_VERSION			$(GCC_VERSION)"
+	@echo "	GCC_MAJOR			$(GCC_MAJOR)"
+	@echo ""
 	@echo "Packages (user defined):"
 	@echo "	INSTALL_PKG			$(INSTALL_PKG)"
 	@echo "	NONSTD_PKGS_CONFIGURE		$(NONSTD_PKGS_CONFIGURE)"
@@ -189,6 +195,10 @@ help:
 	@echo ""
 
 unpack: precomp/$(ARCH) $(PKG_DESTS)
+
+gcc-version: precomp/$(ARCH)
+	$(eval GCC_VERSION:=$(shell $(CC_PATH)/bin/$(TARGET)-gcc --version | head -1 | awk -F" " '{ printf $$3 }'))
+	$(eval GCC_MAJOR:=$(shell echo $(GCC_VERSION) | awk -F"." '{ printf $$1}'))
 
 clean:
 	rm -rf $(OUT_DIR)

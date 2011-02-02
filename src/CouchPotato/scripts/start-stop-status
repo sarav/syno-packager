@@ -24,6 +24,7 @@ SABLIB=/usr/local/SABnzbd/lib
 PYEXE=/usr/local/bin/python
 CPEXE=$CPDIR/CouchPotato/CouchPotato.py
 PAREXE=/usr/local/bin/cfg.parser
+SABEXEUSR=sabnzbduser
 
 # Files
 CPCNF=$CPDIR/CouchPotato/config.ini
@@ -45,7 +46,7 @@ start_daemon ()
 	sed -i "s/^adminport.*$/adminport=\"$CPPORT\"/g" $CPINFO
 
 	# Start CouchPotato
-	su root -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $CPEXE -p $CPPID -d >> $CPLOG 2>&1"
+	su $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $CPEXE -p $CPPID -d >> $CPLOG 2>&1"
 }
 
 stop_daemon ()

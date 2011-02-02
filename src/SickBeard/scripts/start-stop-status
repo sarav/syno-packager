@@ -24,6 +24,7 @@ SABLIB=/usr/local/SABnzbd/lib
 PYEXE=/usr/local/bin/python
 SBEXE=$SBDIR/SickBeard/SickBeard.py
 PAREXE=/usr/local/bin/cfg.parser
+SABEXEUSR=sabnzbduser
 
 # Files
 SBCNF=$SBDIR/SickBeard/config.ini
@@ -44,7 +45,7 @@ start_daemon ()
 	sed -i "s/^adminport.*$/adminport=\"$SBPORT\"/g" $SBINFO
 
 	# Start SickBeard
-	su root -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $SBEXE --daemon >> $SBLOG 2>&1"
+	su $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $SBEXE --daemon >> $SBLOG 2>&1"
 }
 
 stop_daemon ()
@@ -66,9 +67,9 @@ stop_daemon ()
 	# Kill daemon
 	if [ "$SBUSR" = "" -a "$SBPWD" = "" ]; then
 	
-		su root -s /bin/sh -c "wget -q --delete-after --user=$SBUSR --password=$SBPWD 'http://$SBHOST:$SBPORT/home/shutdown/'"
+		su $SABEXEUSR -s /bin/sh -c "wget -q --delete-after --user=$SBUSR --password=$SBPWD 'http://$SBHOST:$SBPORT/home/shutdown/'"
 	else
-		su root -s /bin/sh -c "wget -q --delete-after 'http://$SBHOST:$SBPORT/home/shutdown/'"
+		su $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SBHOST:$SBPORT/home/shutdown/'"
 	fi
 	sleep 1
 

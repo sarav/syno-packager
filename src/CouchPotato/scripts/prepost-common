@@ -35,7 +35,7 @@ preinst ()
 postinst ()
 {
 	# Correct the files ownership
-	chown -R root:root ${SYNOPKG_PKGDEST}
+	chown -R sabnzbduser:root ${SYNOPKG_PKGDEST}
 
 	# Create the view directory
 	mkdir -p /usr/local/CouchPotato

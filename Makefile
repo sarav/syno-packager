@@ -89,6 +89,7 @@ all: out check-arch $(INSTALL_PKG)
 	@echo
 
 buildall: cleanstatus $(ARCHS)
+	@touch out/logs/status.log
 	@echo "Building all in background, use 'tail -f out/logs/status.log' to monitor building status in realtime"
 
 $(ARCHS): out

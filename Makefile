@@ -71,9 +71,9 @@ ROOT=$(PWD)/$(OUT_DIR)/root
 # Environment variables common to all package compilation
 PATH:=$(PWD)/$(CC_PATH)/bin:$(PATH)
 PKG_CONFIG_PATH:=$(ROOT)$(INSTALL_PREFIX)/lib/pkgconfig:$(TEMPROOT)$(INSTALL_PREFIX)/lib/pkgconfig
-CFLAGS=-I$(PWD)/$(CC_PATH)/include -I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include
+CFLAGS=-I$(TEMPROOT)$(INSTALL_PREFIX)/include -I$(ROOT)$(INSTALL_PREFIX)/include# -I$(PWD)/$(CC_PATH)/include
 CPPFLAGS=$(CFLAGS)
-LDFLAGS=-R/usr/local/$(INSTALL_PKG)/lib -L$(PWD)/$(CC_PATH)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib
+LDFLAGS=-R/usr/local/$(INSTALL_PKG)/lib -L$(TEMPROOT)$(INSTALL_PREFIX)/lib -L$(ROOT)$(INSTALL_PREFIX)/lib# -L$(PWD)/$(CC_PATH)/lib
 
 # Variables used to check for bugged config.h and syno.h
 SYNO_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$(TARGET)/include/linux/syno.h

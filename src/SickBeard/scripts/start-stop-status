@@ -66,10 +66,9 @@ stop_daemon ()
 
 	# Kill daemon
 	if [ "$SBUSR" = "" -a "$SBPWD" = "" ]; then
-	
-		su $SABEXEUSR -s /bin/sh -c "wget -q --delete-after --user=$SBUSR --password=$SBPWD 'http://$SBHOST:$SBPORT/home/shutdown/'"
-	else
 		su $SABEXEUSR -s /bin/sh -c "wget -q --delete-after 'http://$SBHOST:$SBPORT/home/shutdown/'"
+	else
+		su $SABEXEUSR -s /bin/sh -c "wget -q --delete-after --user=$SBUSR --password=$SBPWD 'http://$SBHOST:$SBPORT/home/shutdown/'"
 	fi
 	sleep 1
 

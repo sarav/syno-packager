@@ -57,10 +57,10 @@ postinst ()
 	done
 
 	# Correct the files permission
-	chmod 500 /usr/local/SABnzbd/bin/*
-	chmod 500 /usr/local/SABnzbd/lib/*
-	chmod 700 /usr/local/SABnzbd/var/*
-	chmod 700 /usr/local/SABnzbd/etc/*
+	chmod 550 /usr/local/SABnzbd/bin/*
+	chmod 550 /usr/local/SABnzbd/lib/*
+	chmod 770 /usr/local/SABnzbd/var/*
+	chmod 770 /usr/local/SABnzbd/etc/*
 
 	exit 0
 }

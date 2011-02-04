@@ -28,8 +28,8 @@
 # Packaging rules
 ARCH=88f5281
 INSTALL_PKG=SABnzbd
-NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl Cheetah Markdown pyOpenSSL psmisc sysvinit coreutils util-linux-ng
-NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl Cheetah Markdown pyOpenSSL psmisc sysvinit util-linux-ng coreutils
+NONSTD_PKGS_CONFIGURE=SABnzbd Python zlib ncurses readline bzip2 openssl libffi tcl Cheetah Markdown pyOpenSSL psmisc sysvinit coreutils util-linux-ng git curl par2cmdline procps
+NONSTD_PKGS_INSTALL=SABnzbd Python bzip2 tcl Cheetah Markdown pyOpenSSL psmisc sysvinit util-linux-ng coreutils procps
 INSTALL_DEPS=zlib openssl sqlite par2cmdline
 
 # Prefix (optional, can be blank)
@@ -473,6 +473,10 @@ $(OUT_DIR)/sysvinit/syno.config: $(OUT_DIR)/sysvinit.unpack precomp/$(ARCH)
 	@echo $@ ----\> $^
 	touch $@
 
+$(OUT_DIR)/procps/syno.config: $(OUT_DIR)/procps.unpack precomp/$(ARCH)
+	@echo $@ ----\> $^
+	touch $@
+
 $(OUT_DIR)/par2cmdline/syno.config: $(OUT_DIR)/par2cmdline.unpack precomp/$(ARCH) gcc-version
 	@echo $@ ----\> $^
 	cd $(dir $@) && \
@@ -517,7 +521,7 @@ $(OUT_DIR)/SickBeard.install:
 	mv $(ROOT)/Sick-Beard $(ROOT)/SickBeard
 	touch $@
 
-$(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/util-linux-ng/syno.install $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/SABnzbd/syno.clean $(OUT_DIR)/SABnzbd/syno.config 
+$(OUT_DIR)/SABnzbd/syno.install: $(OUT_DIR)/procps/syno.install $(OUT_DIR)/util-linux-ng/syno.install $(OUT_DIR)/coreutils/syno.install $(OUT_DIR)/SABnzbd/syno.clean $(OUT_DIR)/SABnzbd/syno.config 
 	@echo $@ ----\> $^
 	mkdir -p $(ROOT)/SABnzbd
 	cp -Rf $(OUT_DIR)/SABnzbd/* $(ROOT)/SABnzbd
@@ -532,18 +536,6 @@ $(OUT_DIR)/SABnzbd/syno.clean: $(OUT_DIR)/Python/syno.install $(OUT_DIR)/SABnzbd
 	$(TARGET)-strip $(ROOT)/bin/nice
 	$(TARGET)-strip $(ROOT)/bin/ionice
 	$(TARGET)-strip $(ROOT)/bin/par2
-	rm -f $(ROOT)/bin/2to3
-	rm -f $(ROOT)/bin/cheetah
-	rm -f $(ROOT)/bin/cheetah-analyze
-	rm -f $(ROOT)/bin/cheetah-compile
-	rm -f $(ROOT)/bin/c_rehash
-	rm -f $(ROOT)/bin/idle
-	rm -f $(ROOT)/bin/markdown
-	rm -f $(ROOT)/bin/pydoc
-	rm -f $(ROOT)/bin/python2.6-config
-	rm -f $(ROOT)/bin/python-config
-	rm -f $(ROOT)/bin/smtpd.py
-	rm -f $(ROOT)/bin/sqlite3
 	rm -f $(ROOT)/bin/par2create
 	rm -f $(ROOT)/bin/par2verify
 	rm -f $(ROOT)/bin/par2repair
@@ -552,6 +544,7 @@ $(OUT_DIR)/SABnzbd/syno.clean: $(OUT_DIR)/Python/syno.install $(OUT_DIR)/SABnzbd
 	cd $(ROOT)/bin/ && ln -s par2 par2repair
 	rm -rf $(ROOT)/ssl
 	rm -rf $(ROOT)/include
+	rm -rf $(ROOT)/usr
 	rm -rf $(ROOT)/share
 	rm -f $(ROOT)/lib/*.a
 	rm -rf $(ROOT)/lib/python2.6/test
@@ -614,14 +607,22 @@ $(OUT_DIR)/coreutils/syno.install: $(OUT_DIR)/coreutils/syno.config
 $(OUT_DIR)/util-linux-ng/syno.install: $(OUT_DIR)/util-linux-ng/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@)schedutils ionice
+	make -C $(dir $@)sys-utils renice
 	mkdir -p $(ROOT)/bin/
 	cp $(dir $@)schedutils/ionice $(ROOT)/bin/
+	cp $(dir $@)sys-utils/renice $(ROOT)/bin/
 	touch $@
 
 $(OUT_DIR)/psmisc/syno.install: $(OUT_DIR)/psmisc/syno.config
 	@echo $@ ----\> $^
 	make -C $(dir $@) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
 	make -C $(dir $@) DESTDIR=$(ROOT) INSTALL_PREFIX=$(ROOT) install
+	touch $@
+
+$(OUT_DIR)/procps/syno.install: $(OUT_DIR)/procps/syno.config $(OUT_DIR)/ncurses/syno.install
+	@echo $@ ----\> $^
+	mkdir -p $(ROOT)/bin/ $(ROOT)/usr/share/man/man1/
+	make -C $(dir $@) SHARED=0 CC=$(TARGET)-gcc CFLAGS="-DPATH_MAX=4096 $(CFLAGS)" LDFLAGS="$(LDFLAGS)" DESTDIR=$(ROOT) install="install" usr/bin="$(ROOT)/bin/" usr/proc/bin="$(ROOT)/bin/" sbin="$(ROOT)/bin/" bin="$(ROOT)/bin/" SKIP="\$$(MANFILES)" install
 	touch $@
 
 $(OUT_DIR)/Markdown/syno.install: $(OUT_DIR)/Python/syno.config $(OUT_DIR)/Markdown/syno.config

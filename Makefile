@@ -35,6 +35,9 @@ INSTALL_DEPS=zlib openssl sqlite par2cmdline
 # Prefix (optional, can be blank)
 INSTALL_PREFIX=
 
+# Binaries too keep (any other file in $(ROOT)/bin/ will be deleted)
+KEPT_BINS=ps nice renice ionice par2 par2create par2repair par2 par2verify python
+
 
 ######################################
 # User shouldn't edit anything below #
@@ -84,7 +87,7 @@ CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$
 # Standard rules #
 ##################
 #
-all: out check-arch $(INSTALL_PKG)
+all: out check-arch $(INSTALL_PKG) bincleaner
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
 	@echo
 
@@ -211,6 +214,9 @@ cleanall:
 
 realclean: cleanall
 	rm -rf precomp
+
+bincleaner:
+	@cd $(ROOT)/bin/ && rm -f $(filter-out $(KEPT_BINS), $(notdir $(wildcard $(ROOT)/bin/*)))
 
 
 ##################

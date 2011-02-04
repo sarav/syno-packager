@@ -44,6 +44,9 @@ postinst ()
 	ln -s ${SYNOPKG_PKGDEST}/SickBeard /usr/local/SickBeard/SickBeard
 	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/SickBeard/var
 
+	# Correct the files permission
+	chmod 770 /usr/local/SickBeard/var/*
+
 	exit 0
 }
 

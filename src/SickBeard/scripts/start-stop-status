@@ -21,9 +21,12 @@
 SBDIR=/usr/local/SickBeard
 SBVAR=$SBDIR/var
 SABLIB=/usr/local/SABnzbd/lib
-PYEXE=/usr/local/bin/python
 SBEXE=$SBDIR/SickBeard/SickBeard.py
+PYEXE=/usr/local/bin/python
 PAREXE=/usr/local/bin/cfg.parser
+NICEXE=/usr/local/bin/nice
+IONEXE=/usr/local/bin/ionice
+PSEXE=/usr/local/bin/ps
 SABEXEUSR=sabnzbduser
 
 # Files
@@ -45,7 +48,7 @@ start_daemon ()
 	sed -i "s/^adminport.*$/adminport=\"$SBPORT\"/g" $SBINFO
 
 	# Start SickBeard
-	su $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $PYEXE $SBEXE --daemon >> $SBLOG 2>&1"
+	su $SABEXEUSR -s /bin/sh -c "LD_LIBRARY_PATH=$SABLIB $NICEXE -n15 $IONEXE -c2 -n4 $PYEXE $SBEXE --daemon >> $SBLOG 2>&1"
 }
 
 stop_daemon ()
@@ -60,7 +63,7 @@ stop_daemon ()
 	SBPWD=`$PAREXE General web_password $SBCNF`
 
 	# Correct invalid values
-	if [ "$SBHOST" = "0.0.0.0" ]; then
+	if [ "$SBHOST" = "0.0.0.0" -o "$SBHOST" = "" ]; then
 		SBHOST="localhost"
 	fi
 
@@ -84,7 +87,7 @@ stop_daemon ()
 
 daemon_status ()
 {
-	[ "`ps | grep /usr/local/SickBeard | grep -v grep`" != "" ]
+	[ "`su $SABEXEUSR -s /bin/sh -c \"$PSEXE x | grep SickBeard.py | grep -v grep\"`" != "" ]
 }
 
 

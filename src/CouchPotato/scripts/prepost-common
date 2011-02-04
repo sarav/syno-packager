@@ -44,6 +44,9 @@ postinst ()
 	ln -s ${SYNOPKG_PKGDEST}/CouchPotato /usr/local/CouchPotato/CouchPotato
 	ln -s ${SYNOPKG_PKGDEST}/var /usr/local/CouchPotato/var
 
+	# Correct the files permission
+	chmod 770 /usr/local/CouchPotato/var/*
+
 	exit 0
 }
 

@@ -87,7 +87,7 @@ CONFIG_H=precomp/$(ARCH)$(shell grep ^$(ARCH): arch-target.map | cut -d: -f 4)/$
 # Standard rules #
 ##################
 #
-all: out check-arch $(INSTALL_PKG) bincleaner
+all: out check-arch $(INSTALL_PKG)
 	@echo $(if $(strip $^),Done,Run \"make help\" to get help info).
 	@echo
 
